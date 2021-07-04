@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+# export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	sh -c "\
+		cd tools/cxgbtool && make install || exit 1; \
+	"
+
+override_dh_auto_install:
+	sh -c "\
+		mkdir -p debian/cxgbtool/sbin; \
+		cp -a /sbin/cxgbtool debian/cxgbtool/sbin/; \
+	"
+
+override_dh_shlibdeps:
+
+override_dh_usrlocal:
+
+override_dh_auto_clean:
+
+override_dh_auto_test:
