@@ -1,0 +1,35 @@
+#!/bin/sh
+ 
+# Exit on error
+set -e
+BINPATH=/usr/local/sbin/
+
+if [ ! -d $BINPATH ] ; then
+	mkdir -p $BINPATH
+fi
+
+if [ -f $BINPATH/iscsiadm ]
+then
+        mv $BINPATH/iscsiadm $BINPATH/iscsiadm1
+fi
+if [ -f $BINPATH/iscsid ]
+then
+        mv $BINPATH/iscsid $BINPATH/iscsid1
+fi
+if [ -f $BINPATH/iscsi-iname ]
+then
+        mv $BINPATH/iscsi-iname $BINPATH/iscsi-iname1
+fi
+if [ -f /etc/iscsi/iscsid.conf ]
+then
+        #echo "/etc/iscsi/iscsid.conf exists"
+        mv /etc/iscsi/iscsid.conf /etc/iscsi/iscsid.conf.1
+fi
+if [ -f $BINPATH/iscsi_discovery ]
+then
+        mv $BINPATH/iscsi_discovery $BINPATH/iscsi_discovery1
+fi
+
+## Generate new module dependencies.
+depmod
+exit 0

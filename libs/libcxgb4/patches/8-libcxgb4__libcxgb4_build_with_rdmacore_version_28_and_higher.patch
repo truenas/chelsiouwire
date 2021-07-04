@@ -1,0 +1,38 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1584985578 -19800
+#      Mon Mar 23 23:16:18 2020 +0530
+# Node ID af1ca652d80af0bea71ce4c1bbace8423ec9704a
+# Parent  815e247f709bea2457277b1f56c78e66a87f842b
+libcxgb4: libcxgb4 build with rdmacore version 28 and higher
+
+Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+
+diff -r 815e247f709b -r af1ca652d80a rdma-core/providers/cxgb4/dev.c
+--- a/rdma-core/providers/cxgb4/dev.c	Mon Mar 23 23:06:31 2020 +0530
++++ b/rdma-core/providers/cxgb4/dev.c	Mon Mar 23 23:16:18 2020 +0530
+@@ -46,6 +46,8 @@
+ #include "libcxgb4.h"
+ #include "cxgb4-abi.h"
+ 
++static void c4iw_free_context(struct ibv_context *ibctx);
++
+ #define PCI_VENDOR_ID_CHELSIO		0x1425
+ 
+ /*
+@@ -103,6 +105,7 @@ static const struct verbs_context_ops  c
+ 	.detach_mcast = c4iw_detach_mcast,
+ 	.post_srq_recv = c4iw_post_srq_recv,
+ 	.req_notify_cq = c4iw_arm_cq,
++	.free_context = c4iw_free_context,
+ };
+ 
+ static const struct verbs_context_ops c4iw_ctx_t4_ops = {
+@@ -502,7 +505,6 @@ static const struct verbs_device_ops c4i
+ 	.match_device = c4iw_device_match,
+ 	.alloc_device = c4iw_device_alloc,
+ 	.alloc_context = c4iw_alloc_context,
+-	.free_context = c4iw_free_context,
+ };
+ PROVIDER_DRIVER(cxgb4, c4iw_dev_ops);
+ 

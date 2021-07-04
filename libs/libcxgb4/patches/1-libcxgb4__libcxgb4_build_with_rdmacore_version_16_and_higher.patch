@@ -1,0 +1,190 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1528302703 -19800
+#      Wed Jun 06 22:01:43 2018 +0530
+# Node ID 98531edc7b056038c858a801151dd5650800729e
+# Parent  ccb4ffdb0161e9fdaf3bbd12337bfe9c5fd4cc98
+libcxgb4: libcxgb4 build with rdmacore version 16 and higher
+
+Pulls in the following changes as a patch to be conditionally applied to
+rdma-core after replacing the 'providers/cxgb4' with 'src'.
+
+From fd9e27ca1a0c1a22613a929a321ad776b08b988e Mon Sep 17 00:00:00 2001
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: [PATCH] cxgb4: Move sysconf up to driver_init
+
+From 516b8d4e4ebe2d6d67da80ab2af87f2cf78d48ff Mon Sep 17 00:00:00 2001
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: [PATCH] providers: Use the new match_device and allocate_device ops
+
+From 48dddef477de3a7318ea2861e8e4845543ea3191 Mon Sep 17 00:00:00 2001
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: [PATCH] cxgb: Use the new common PCI matching infrastructure
+
+diff -r ccb4ffdb0161 -r 98531edc7b05 rdma-core/providers/cxgb4/dev.c
+--- a/rdma-core/providers/cxgb4/dev.c	Mon Jun 04 20:55:59 2018 +0530
++++ b/rdma-core/providers/cxgb4/dev.c	Wed Jun 06 22:01:43 2018 +0530
+@@ -51,23 +51,17 @@
+ /*
+  * Macros needed to support the PCI Device ID Table ...
+  */
+-#define CH_PCI_DEVICE_ID_TABLE_DEFINE_BEGIN \
+-	static const struct { \
+-		unsigned vendor; \
+-		unsigned device; \
+-	} hca_table[] = {
++#define CH_PCI_DEVICE_ID_TABLE_DEFINE_BEGIN					\
++	static const struct verbs_match_ent hca_table[] = {
+ 
+ #define CH_PCI_DEVICE_ID_FUNCTION \
+ 		0x4
+ 
+-#define CH_PCI_ID_TABLE_ENTRY(__DeviceID) \
+-		{ \
+-			.vendor = PCI_VENDOR_ID_CHELSIO, \
+-			.device = (__DeviceID), \
+-		}
++#define CH_PCI_ID_TABLE_ENTRY(__DeviceID)					\
++	VERBS_PCI_MATCH(PCI_VENDOR_ID_CHELSIO, __DeviceID, NULL)
+ 
+ #define CH_PCI_DEVICE_ID_TABLE_DEFINE_END \
+-	}
++	{} }
+ 
+ #include "t4_pci_id_tbl.h"
+ 
+@@ -236,11 +230,6 @@ static void c4iw_free_context(struct ibv
+ 	free(context);
+ }
+ 
+-static struct verbs_device_ops c4iw_dev_ops = {
+-	.alloc_context = c4iw_alloc_context,
+-	.free_context = c4iw_free_context
+-};
+-
+ #ifdef STALL_DETECTION
+ 
+ int stall_to;
+@@ -412,46 +401,22 @@ void dump_state(void)
+ 
+ #endif
+ 
+-static struct verbs_device *cxgb4_driver_init(const char *uverbs_sys_path,
+-					    int abi_version)
++static bool c4iw_device_match(struct verbs_sysfs_dev *sysfs_dev)
+ {
+-	char devstr[IBV_SYSFS_PATH_MAX], ibdev[16], value[32], *cp;
+-	struct c4iw_dev *dev;
+-	unsigned vendor, device, fw_maj, fw_min;
+-	int i;
++	char value[32], *cp;
++	unsigned int fw_maj, fw_min;
+ 
+-	if (ibv_read_sysfs_file(uverbs_sys_path, "device/vendor",
+-				value, sizeof value) < 0)
+-		return NULL;
+-	sscanf(value, "%i", &vendor);
+-
+-	if (ibv_read_sysfs_file(uverbs_sys_path, "device/device",
+-				value, sizeof value) < 0)
+-		return NULL;
+-	sscanf(value, "%i", &device);
+-
+-	for (i = 0; i < sizeof hca_table / sizeof hca_table[0]; ++i)
+-		if (vendor == hca_table[i].vendor &&
+-		    device == hca_table[i].device)
+-			goto found;
+-
+-	return NULL;
+-
+-found:
++	/* Rely on the core code to match PCI devices */
++	if (!sysfs_dev->match)
++		return false;
+ 
+ 	/*
+ 	 * Verify that the firmware major number matches.  Major number
+ 	 * mismatches are fatal.  Minor number mismatches are tolerated.
+ 	 */
+-	if (ibv_read_sysfs_file(uverbs_sys_path, "ibdev",
+-				ibdev, sizeof ibdev) < 0)
+-		return NULL;
+-
+-	memset(devstr, 0, sizeof devstr);
+-	snprintf(devstr, sizeof devstr, "%s/class/infiniband/%s",
+-		 ibv_get_sysfs_path(), ibdev);
+-	if (ibv_read_sysfs_file(devstr, "fw_ver", value, sizeof value) < 0)
+-		return NULL;
++	if (ibv_read_sysfs_file(sysfs_dev->ibdev_path, "fw_ver", value,
++				sizeof(value)) < 0)
++		return false;
+ 
+ 	cp = strtok(value+1, ".");
+ 	sscanf(cp, "%i", &fw_maj);
+@@ -463,7 +428,7 @@ found:
+ 			"Firmware major number is %u and libcxgb4 needs %u.\n",
+ 			fw_maj, FW_MAJ);
+ 		fflush(stderr);
+-		return NULL;
++		return false;
+ 	}
+ 
+ 	DBGLOG("libcxgb4");
+@@ -474,20 +439,24 @@ found:
+ 			fw_maj, FW_MAJ);
+ 		fflush(stderr);
+ 	}
++	return true;
++}
+ 
+-	PDBG("%s found vendor %d device %d chip %d\n",
+-	     __FUNCTION__, vendor, device,
+-	     CHELSIO_PCI_ID_CHIP_VERSION(hca_table[i].device));
++static struct verbs_device *c4iw_device_alloc(struct verbs_sysfs_dev *sysfs_dev)
++{
++	struct c4iw_dev *dev;
++
++	c4iw_page_size = sysconf(_SC_PAGESIZE);
++	c4iw_page_shift = long_log2(c4iw_page_size);
++	c4iw_page_mask = ~(c4iw_page_size - 1);
+ 
+ 	dev = calloc(1, sizeof *dev);
+-	if (!dev) {
++	if (!dev)
+ 		return NULL;
+-	}
+ 
+ 	pthread_spin_init(&dev->lock, PTHREAD_PROCESS_PRIVATE);
+-	dev->ibv_dev.ops = C4IW_DEVOPS_IS_PTR c4iw_dev_ops;
+-	dev->chip_version = CHELSIO_PCI_ID_CHIP_VERSION(hca_table[i].device);
+-	dev->abi_version = abi_version;
++	dev->chip_version = CHELSIO_CHIP_VERSION(sysfs_dev->match->device >> 8);
++	dev->abi_version = sysfs_dev->abi_ver;
+ 
+ 	list_head_init(&dev->srq_list);
+ 	PDBG("%s device claimed\n", __FUNCTION__);
+@@ -522,13 +491,17 @@ found:
+ 	return &dev->ibv_dev;
+ }
+ 
+-static __attribute__((constructor)) void cxgb4_register_driver(void)
+-{
+-	c4iw_page_size = sysconf(_SC_PAGESIZE);
+-	c4iw_page_shift = long_log2(c4iw_page_size);
+-	c4iw_page_mask = ~(c4iw_page_size - 1);
+-	verbs_register_driver("cxgb4", cxgb4_driver_init);
+-}
++static const struct verbs_device_ops c4iw_dev_ops = {
++	.name = "cxgb4",
++	.match_min_abi_version = 0,
++	.match_max_abi_version = INT_MAX,
++	.match_table = hca_table,
++	.match_device = c4iw_device_match,
++	.alloc_device = c4iw_device_alloc,
++	.alloc_context = c4iw_alloc_context,
++	.free_context = c4iw_free_context,
++};
++PROVIDER_DRIVER(c4iw_dev_ops);
+ 
+ #ifdef STATS
+ void __attribute__ ((destructor)) cs_fini(void);

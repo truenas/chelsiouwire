@@ -1,0 +1,8 @@
+package: chcr
+Section: Kernels
+Version: 3.14.0.3
+Priority: optional
+Architecture: any
+Maintainer: Chelsio Communications <support@chelsio.com>
+Depends: chelsio-series4-firmware (>= 1.1.0.10), cxgb4 (>= 1.1.0.10)
+Description: Chelsio Terminator Crypto driver for Linux

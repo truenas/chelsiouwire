@@ -1,0 +1,13 @@
+Server
+===
+Usage: %s <portnum> <file>
+
+Build:
+cc -g -ldl -I..  -I../include/ server.c ../libssl.a ../libcrypto.a -o server
+
+
+Client
+=====
+Usage: %s <hostname> <portnum> <outfile>
+
+cc -g -ldl -I..  -I../include/ client.c ../libssl.a ../libcrypto.a -o client

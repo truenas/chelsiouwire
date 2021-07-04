@@ -1,0 +1,29 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1535467247 -19800
+#      Tue Aug 28 20:10:47 2018 +0530
+# Node ID 00d354c7bdf5d4e4190515ba0b5c7c55bf19d0d5
+# Parent  a85de3ff201bda678b22fbaa3e59356798d58d97
+libcxgb4: libcxgb4 build with rdmacore version 18 and higher
+
+commit 57c069257f1f984bf34fe4211dcd60b2864ba155
+Author: Matan Barak <matanb@mellanox.com>
+Date:   Tue Jan 9 09:42:33 2018 +0000
+
+    Add driver-id to ioctl() infrastructure
+
+diff -r a85de3ff201b -r 00d354c7bdf5 rdma-core/.git/index
+Binary file rdma-core/.git/index has changed
+diff -r a85de3ff201b -r 00d354c7bdf5 rdma-core/providers/cxgb4/dev.c
+--- a/rdma-core/providers/cxgb4/dev.c	Tue Aug 28 20:00:41 2018 +0530
++++ b/rdma-core/providers/cxgb4/dev.c	Tue Aug 28 20:10:47 2018 +0530
+@@ -124,7 +124,8 @@ static struct verbs_context *c4iw_alloc_
+ 	uint64_t raw_fw_ver;
+ 	struct ibv_device_attr attr;
+ 
+-	context = verbs_init_and_alloc_context(ibdev, cmd_fd, context, ibv_ctx);
++	context = verbs_init_and_alloc_context(ibdev, cmd_fd, context, ibv_ctx,
++					       RDMA_DRIVER_CXGB4);
+ 	if (!context)
+ 		return NULL;
+ 

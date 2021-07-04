@@ -1,0 +1,23 @@
+--- dev/linux/bonding/4.19.0/bond_main.c	Mon Nov 19 08:34:09 2018 -0800
++++ dev/linux/bonding/4.19.0/bond_main.c	Mon Nov 19 08:52:26 2018 -0800
+@@ -3094,6 +3116,20 @@
+ 	case NETDEV_REGISTER:
+ 		bond_create_proc_entry(event_bond);
+ 		break;
++	case NETDEV_DOWN: {
++		struct slave *slave = bond_first_slave(event_bond);
++
++		toe_failover(bond_dev, slave ? slave->dev : NULL,
++			     TOE_BOND_DOWN, NULL);
++		break;
++	}
++	case NETDEV_UP: {
++		struct slave *slave = bond_first_slave(event_bond);
++
++		toe_failover(bond_dev, slave ? slave->dev : NULL,
++			     TOE_BOND_UP, NULL);
++		break;
++	}
+ 	case NETDEV_NOTIFY_PEERS:
+ 		if (event_bond->send_peer_notif)
+ 			event_bond->send_peer_notif--;

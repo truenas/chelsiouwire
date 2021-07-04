@@ -1,0 +1,1095 @@
+.\" -*- nroff -*-
+.\" Copyright (c) 2004-2021 by Chelsio Communications.  All Rights Reserved.
+.TH CXGBTOOL "8" "May 2004-2021" "cxgbtool 1.17" "Linux"
+.SH "NAME"
+cxgbtool \- display or change Chelsio network card settings
+.SH "SYNOPSIS"
+.B cxgbtool
+\fIinterface\fR \fBclearstats\fR [\fBport\fR|\fBqueue\fR [\fIindex\fR]]
+
+.B cxgbtool
+\fIinterface\fR \fBconfigure_ringbb\fR [\fIparam\fR \fIval\fR] ...
+
+.B cxgbtool
+\fIinterface\fR \fBcontext\fR \fItype\fR \fIid\fR
+
+.B cxgbtool
+\fIinterface\fR \fBdesc\fR \fIqueue-set\fR \fIqueue-num\fR \fIindex\fR [\fIcount\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBqdesc\fR \fIqueue-type\fR \fIqueue-num\fR \fIindex\fR [\fIcount\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBfec\fR [\fIfec-param\fR] ...
+
+.B cxgbtool
+\fIinterface\fR \fBdriver-file\fR [\fIfile\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBeeprom\fR \fIaddress\fR \fIEEPROM-image\fR
+
+.B cxgbtool
+\fIinterface\fR \fBfilter\fR \fIindex\fR [\fIparam\fR \fIval\fR[:\fImask\fR]] ...
+
+.B cxgbtool
+\fIinterface\fR \fBfilter\fR \fIindex\fR \fBdelete\fR|\fBclear\fR
+
+.B cxgbtool
+\fIinterface\fR \fBfilter\fR \fBshow\fR
+
+.B cxgbtool
+\fIinterface\fR \fBloadfw\fR \fIFW-image\fR
+
+.B cxgbtool
+\fIinterface\fR \fBloadcfg\fR \fICFG-text-file\fR
+
+.B cxgbtool
+\fIinterface\fR \fBloadboot\fR \fIboot-image\fR
+
+.B cxgbtool
+\fIinterface\fR \fBloadboot-cfg\fR \fIboot-configuration\fR
+
+.B cxgbtool
+\fIinterface\fR \fBreadboot-cfg\fR
+
+.B cxgbtool
+\fIinterface\fR \fBmodifyboot-cfg\fR [\fIparam\fR \fIvalue\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBlro\fR \fBon\fR|\fBoff\fR
+
+.B cxgbtool
+\fIinterface\fR \fBmdio\fR \fIphy-addr\fR \fIMMD-addr\fR
+\fIregister-addr\fR [\fIvalue\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBi2c\fR \fIport\fR \fIdevice\fR \fIoffset\fR \fIlen\fR
+[\fIbyte(s)\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBmemdump\fR \fImemory\fR \fIaddr\fR \fIcount\fR
+
+.B cxgbtool
+\fIinterface\fR \fBmeminfo\fR
+
+.B cxgbtool
+\fIinterface\fR \fBmtus\fR [\fImtu0\fR...\fImtuN\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBnapi\fR \fBon\fR|\fBoff\fR
+
+.B cxgbtool
+\fIinterface\fR \fBpktsched\fR \fBport\fR \fIindex\fR \fImin%\fR \fImax%\fR
+
+.B cxgbtool
+\fIinterface\fR \fBpktsched\fR \fBtunnelq\fR \fIindex\fR \fImax%\fR
+
+.B cxgbtool
+\fIinterface\fR \fBpktsched\fR \fBtx\fR \fIindex\fR [\fIparam\fR \fIval\fR] ...
+
+.B cxgbtool
+\fIinterface\fR \fBsched-class\fR \fIsub-command\fR [\fIparam\fR \fIvalue\fR] ...
+
+.B cxgbtool
+\fIinterface\fR \fBsched-queue\fR \fIqueue\fR \fIclass\fR
+
+.B cxgbtool
+\fIinterface\fR \fBsched-pfvf\fR \fIpf\fR \fIvf\fR \fIclass\fR
+
+.B cxgbtool
+\fIinterface\fR \fBpm\fR [\fITx-pages\fR \fIRx-pages\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBpolicy\fR \fIoffload-policy\fR
+
+.B cxgbtool
+\fIinterface\fR \fBproto\fR
+
+.B cxgbtool
+\fIinterface\fR \fBqset\fR [\fIindex\fR [\fIparam\fR \fIvalue\fR] ...]
+
+.B cxgbtool
+\fIinterface\fR \fBqintr\fR \fIqid\fR [[\fIparam\fR \fIvalue\fR] ...]
+
+.B cxgbtool
+\fIinterface\fR \fBqsets\fR [\fIcount\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBqtype-num\fR \fIqtype\fR [\fIcount\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBsend-workreq\fR \fIqid\fR \fIbyte\fR [\fIbyte\fR ...]
+
+.B cxgbtool
+\fIinterface\fR \fBreg\fR \fIaddress\fR[\fB=\fIvalue\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBregdump\fR [\fImodule\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBtcamdump\fR \fIaddress\fR \fIcount\fR
+
+.B cxgbtool
+\fIinterface\fR \fBtcb\fR \fIindex\fR
+
+.B cxgbtool
+\fIinterface\fR \fBtrace\fR \fBtx\fR|\fBrx\fR|\fBall\fR \fBon\fR|\fBoff\fR
+[\fBnot\fR] [\fIparam\fR \fIval\fR[:\fImask\fR]] ...
+
+.B cxgbtool
+\fIinterface\fR \fBtrace\fR \fBtx\fR|\fBrx\fR|\fBall\fR
+
+.B cxgbtool
+\fIinterface\fR \fBmpstrace\fR \fIindex\fR \fBrx\fR|\fBtx\fR|\fBloopback\fR|\fBoff\fR
+[\fIchannel\fR] [\fBnot\fR] [\fIparam\fR \fIval\fR] ...
+
+.B cxgbtool
+\fIinterface\fR \fBmpstrace\fR \fIindex\fR
+
+.B cxgbtool
+\fIinterface\fR \fBioqs\fR
+
+.B cxgbtool
+\fIinterface\fR \fBla\fR
+
+.B cxgbtool
+\fIinterface\fR \fBup\fR
+
+.B cxgbtool
+\fIinterface\fR \fBwdtoe\fR \fIstats\fR [\fIpid\fR]
+
+.B cxgbtool
+\fIinterface\fR \fBwdudp\fR \fIstats\fR [\fIpid\fR]
+
+.B cxgbtool \-h | \-\-help
+
+.B cxgbtool \-v | \-\-version
+.SH "DESCRIPTION"
+.BI cxgbtool
+queries or sets various aspects of Chelsio network interface cards.  It
+complements standard tools used to configure network settings and provides
+functionality not available through such tools.
+
+.I interface
+is the name of the network device to work on.
+
+All numerical parameters can be specified in hex (with a \fB0x\fR prefix)
+or decimal.
+.SH "OPTIONS"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show usage information
+.PP
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+show version information
+.PP
+.B cxgbtool
+supports the following operations:
+.TP
+\fBcontext\fR \fItype\fR \fIid\fR
+Display the contents of an SGE context of the given type.  The context type is
+one of \fBegress\fR, \fBfl\fR, \fBcq\fR, or \fBresponse\fR.
+.TP
+\fBdesc\fR \fIqueue-set\fR \fIqueue-num\fR \fIindex\fR [\fIcount\fR]
+Display the contents of \fIcount\fR SGE descriptors of the given queue of the
+given SGE queue set starting at \fIindex\fR.  Queues are numbered from 0 to 5
+in the order Tx Ethernet queue, Tx Offload queue, Tx control queue, response queue,
+Rx queue 0, and Rx queue 1.  \fIcount\fR defaults to 1.
+.TP
+\fBqdesc\fR \fIqueue-type\fR \fIqueue-num\fR \fIindex\fR [\fIcount\fR]
+Display the contents of an SGE Queue (\fIqueue-type\fR, \fIqueue-num\fR)
+starting at offset \fIindex\fR.  If \fIcount\fR is ommitted, then only one
+descriptor will be dumped.  \fIQueue-type\fR may be one of:
+.RS
+.TP
+\fBeth\fR (aliases \fBtx\fR, \fBxmit\fR)
+Ethernet TX Queue.
+.TP
+\fBofld\fR (aliases \fBoffload\fR)
+Offload Queue.
+.TP
+\fBcrypto\fR
+Crypto Queue.
+.TP
+\fBctrl\fR (aliases \fBcontrol\fR)
+Control Queue.
+.TP
+\fBfl\fR (aliases \fBfreelist\fR)
+Free List Queue.
+.TP
+\fBrsp\fR (aliases \fBrspq\fR, \fBresponse\fR, \fBresponseq\fR)
+Response Queue.
+.RE
+.TP
+\fBfec\fR [\fIfec-param\fR] ...
+Display or set advertised \fBForward Error Correction\fR (FEC) parameters
+for a Link.  Without any optional \fIfec-param\fRs, the supported and
+currently advertised FEC parameters for the Link will be displayed.  If one
+or more \fIfec-param\fRs are provided, they will be used for the advertised
+FEC parameters on the link.
+.IP
+Note: FEC is a mechanism which encodes data redundantly (much like ECC
+Memory) in order to be able to recover from minor errors.  Some
+Cables/Transceiver Modules will need one type or another of FEC and some
+will not.  Normally, the Transceiver Module EPROM encodes a number of FEC
+parameters which govern how to determine the right type of FEC, if any, to
+use for a Link based on the IEEE 802.3 interpretation specifications.  Both
+PEERs must use the same FEC type in order for a Link to be established.  If
+one PEER has been manually set to use a non-IEEE 802.3-based FEC type,
+then the other PEER will need to make the same manual FEC type setting.
+.IP
+Links may be managed in either Auto-Negotiated or non-Auto-Negotiated
+mode (set by \fBethtool\fR(8)).  Legal values for \fIfec-param\fRs are:
+.RS
+.IP \fBauto\fR
+Use standard FEC settings as specified by IEEE 802.3 interpretations of
+Cable Transceiver Module parameters.
+.IP \fBoff\fR
+AN: don't advertise any FEC parameters.
+.br
+non-AN: disable FEC.
+.IP \fBbaser\fR
+AN: advertise BaseR/Reed-Solomon FEC.
+.br
+non-AN: use BaseR/Reed-Solomon FEC.
+.IP \fBrs\fR
+AN: advertise Reed-Solomon FEC.
+.br
+non-AN: use Reed-Solomon FEC.
+.RE
+.P
+If either \fBauto\fR or \fBoff\fR are specified, no other parameters may be
+specified.
+.P
+For Auto-Negotiate mode, multiple FEC types are allowed to be specified.
+For non-Auto-Negotiate mode only a single FEC type may be
+specified.
+.TP
+\fBdriver-file\fR [\fIfile\fR]
+Without \fIfile\fR parameter, it lists the available driver files.  Otherwise, it dumps the specified driver file.
+.RS
+.TP
+\fBEx 1:\fR cxgbtool <netdev> driver-file
+Lists all driver files available.
+.TP
+\fBEx 2:\fR cxgbtool <netdev> driver-file meminfo
+Dump contents of meminfo driver file.
+.RE
+.TP
+\fBeeprom\fR \fIaddress\fR \fIEEPROM-image\fR
+write the supplied image to the EEPROM starting at \fIaddress\fR
+.TP
+\fBfilter\fR \fIindex\fR [ \fIparam\fR { \fIval\fR[:\fImask\fR] | \fIaddr\fR[/\fImask-len\fR}] } ] ...
+configure the HW ingress packet filter with the given index.
+
+IPv6 filter take up 4 indices on T5 and 2 indices on T6. So, an IPv6 filter created at index X will
+occupy indices X, X+1, X+2 and X+3 on T5, and indices X, X+1 on T6.
+The first and last index used by IPv6 filter will be displayed in filter show output.
+
+An attempt to create filter at an index already in use by previously created filter will fail. In order to
+create new filter at the same index used by previously created filter, the previously created filter should
+be deleted first.
+
+Supported ingress packet matching parameters are:
+.RS
+.TP
+.B iport
+Packet ingress port number.
+.TP
+.B ivlan
+Inner VLAN tag.
+.TP
+.B ovlan
+Outer VLAN tag.
+.TP
+.B pf
+PCI-E Physical Function ID.
+.TP
+.B vf
+PCI-E Single Root I/O Virtualization (SR-IOV) Virtual Function ID.  The
+.B pf
+and
+.B vf
+filter specifications are almost always used together.  VFs are associated
+with a particular PF \(em the mapping between the Virtual Interface
+abstraction and specific PF/VF ID pairs may not be completely obvious ...
+Masks for the PF and VF IDs can create filters which match a broad array of
+PF/VFs ...  often in a dangerous and nonsensical manner ...
+.TP
+.B macidx
+Exact match MAC address table index.
+.TP
+.B matchtype
+MAC address "match type" \(em 0=unicast, 1=unicast hash, 2=multicast,
+3=multicast hash, 4=PROM, 5=hyper PROM, 6=broadcast, 7=none.
+.TP
+.B ethtype
+Ethernet type.
+.TP
+.B lip
+Local IP address.
+.TP
+.B fip
+Foreign IP address.  If both \fBlip\fR and \fBfip\fR then both must be IPv4
+addresses or both must be IPv6 addresses.
+.TP
+.B lport
+Local IP port.
+.TP
+.B fport
+Foreign IP port.
+.TP
+.B proto
+IP protocol number \(em ICMP=1, TCP=6, UDP=17, etc.
+.TP
+.B tos
+IP Type Of Service.
+.TP
+.B fcoe
+Match Fibre Channel over Ethernet frames: 0 or 1.
+.TP
+.B frag
+Match fragmented IP packets: 0 or 1.
+.TP
+.B encap_vni
+Match VNI ID of encapsulated/tunnel packet like VxLAN.
+.TP
+.B encap_inner_mac
+Match inner mac address of encapsulated/tunnel packet like VxLAN
+.TP
+.B encap_matchtype
+Match type for inner mac similar to matchtype described above.
+.TP
+.B encap_lookup
+Specify whether to match on outer or inner header for encapsulated/tunnel packet.
+.RE
+.IP
+All of the above matching parameters accept optional bit masks.  The default
+mask values are all 1s which include all field bits in the filter matching
+rule.  The masks for all values other than IP addresses are specified by
+appending a \fB:<mask>\fR value.  The masks for IP addresses are specified
+by appending a \fB/<mask-length>\fR which specifies a "left-justified" mask
+of \fB<mask-length>\fR 1-bits.  Mask for mac address is specified by
+appending a \fB/<mac-mask>\fR. By default, all unspecified matching fields
+are configured as "match any" with values and masks set to 0.
+.IP
+Supported operational parameters are:
+.RS
+.TP
+.B type
+Explicitly specify the filter to be an \fBIPv4\fR filter (default) or an
+\fBIPv6\fR filter.  The new filter will only match ingress packets of the
+selected type.  The filter type is also implicitly determined by the format
+of any IPv4 or IPv6 addresses (\fBlip\fR and \fBfip\fR) that may be present
+in the filter specification.  All specified IP addresses and the use of
+\fBtype\fR must agree.
+.TP
+.B hitcnts
+Count filter hits: 0 (default) or 1.
+.TP
+.B prio
+Filter has priority over active and server regions of TCAM: 0 (default) or 1.
+.TP
+.B action
+Ingress packet disposition: \fBpass\fR (default), \fBdrop\fR or \fBswitch\fR
+(looped back to an egress port).
+.TP
+.B queue
+Ingress queue index to which to deliver the ingress packet when using action
+\fBpass\fR.  By default, ingress packets will be delivered "hashed across"
+all of the ingress queues using Receive Side Scaling (RSS).
+.TP
+.B rpttid
+Report matching filter index in ingress packet header: 0 (default) or 1.
+.TP
+.B tcbhash
+Select TCB hash information in ingress packet header: 0 (default) or 1.
+.TP
+.B eport
+Egress port number on which to resend ingress packet when using action
+\fBswitch\fR.
+.TP
+.B dmac
+Rewrite \fBswitch\fR packet destination MAC addresses.
+.TP
+.B drop_encap_hdr
+To drop encapsulation header.
+.TP
+.B smac
+Rewrite \fBswitch\fR packet source MAC address.
+.TP
+.B swapmac
+Swap \fBswitch\fR packet source MAC and destination MAC address.
+.TP
+.B vlan
+Rewrite \fBswitch\fR packet VLAN Tag by deleting any VLAN Tags (\fBnone\fR),
+assigning a specified VLAN Tag (\fB=<tag>\fR) or inserting a VLAN Tag
+(\fB+<tag>\fR).  VLAN Tags are 16 bits and comprise of a VLAN Identification
+(VID) field in bits 11:0, a Drop Eligible Indicator (DEI) field in bit 12,
+and a Priority Code Point (PCP) field in bits 15:13.  See the IEEE 802.1Q
+standard for Virtual LANs on an Ethernet network for more information.
+.TP
+.B cap
+Specify capability as either \fBmaskfull\fR (default) or \fBmaskless\fR.
+Maskfull filters, which support configuring masks for packet-matching
+params, have limited number of entries available.
+Maskless filters on other hand don't support configuring masks for
+packet-matching params, and have more number of entries available.
+(NOTE: Mask if specified for maskless filters will get ignored.)
+So, specifying lip, fip, lport, fport and proto as matching
+parameters is mandatory when using maskless filters.
+.TP
+.B nat
+Specify the desired NAT mode. Valid NAT modes values are:
+.RS
+.TP
+.B dip
+Perform NAT on destination IP.
+.TP
+.B dip-dp
+Perform NAT on destination IP, destination Port.
+.TP
+.B dip-dp-sip
+Perform NAT on destination IP, destination Port, source IP.
+.TP
+.B dip-dp-sp
+Perform NAT on destination IP, destination Port, source Port.
+.TP
+.B sip-sp
+Perform NAT on source IP, source Port.
+.TP
+.B dip-sip-sp
+Perform NAT on destination IP, source IP, source Port.
+.TP
+.B all
+Perform NAT on all 4-tuple fields.
+.RE
+.TP
+.B natflag
+Enable performing NAT only on segments which do not have TCP FIN or RST set
+.TP
+.B natseq
+NAT is performed only if incoming segment's sequence no. + payload-length
+is less than this supplied value.
+.TP
+.B nat_lip
+Rewrite \fBswitch\fR packet and perform \fBNAT\fR using this destination IP
+.TP
+.B nat_fip
+Rewrite \fBswitch\fR packet and perform \fBNAT\fR using this source IP
+.TP
+.B nat_lport
+Rewrite \fBswitch\fR packet and perform \fBNAT\fR using this destination Port
+.TP
+.B nat_fport
+Rewrite \fBswitch\fR packet and perform \fBNAT\fR using this source IP
+.RE
+.IP
+NOTE: The number of available filters as well as the exact set of values
+allowed for the filter parameters and masks depends on the adapter and its
+configuration.  Consult the adapter documentation for specific information
+on any limitations.
+.TP
+\fBfilter\fR \fIindex\fR \fBdelete\fR|\fBclear\fR
+delete the filter with the given index.
+.TP
+\fBfilter\fR \fBshow\fR
+display all filters previously set.
+.TP
+\fBloadfw\fR \fIFW-image\fR
+Load the supplied firmware image to the serial FLASH.  Note that newer
+drivers will automatically clear any FIrmware Configuration File stored on
+FLASH when new Firmware is loaded in order to avoid difficult to diagnose
+adapter initialization issues.  The user will need to re-FLASH a new
+Firmware Configuration File which is compatible with the new Firmware if
+that's desired.
+.TP
+\fBloadcfg\fR \fICFG-text-file\fR
+Load the supplied Firmware Configuration File into the serial FLASH.  If the
+reserved file name "\fBclear\fR" is provided, the FLASH area reserved for the
+Firmware Configuration File will be cleared.  Note that loading a new Firmware
+image will also cause this area of the FLASH to be cleared in order to avoid
+issues with mismatched Firmware and Configuration Files.
+.TP
+\fBloadboot\fR \fIboot-image\fR
+Load the supplied BIOS boot ROM image to the serial flash. If the reserved
+file name "\fBclear\fR" is provided, the FLASH area reserved for the BIOS
+boot ROM image will be cleared.
+.TP
+\fBloadboot-cfg\fR \fIboot-configuration\fR
+Load the supplied Boot Configuration to the serial flash. The Boot
+Configuration is used by the BIOS Boot Image in order to direct it's actions
+at boot time. If the reserved file name "\fBclear\fR" is provided, the FLASH
+area reserved for the Boot Configuration will be cleared.  The utility
+\fBbootcfg\fR(8) can be used to generate Boot Configurations.
+.TP
+\fBreadboot-cfg\fR
+Read and display current Boot settings from Adapter flash. Display will show
+vlan ids for the ports and if the NIC, FCoE, iSCSI boot settings are enabled
+or disabled.
+Result is displayed in hexadecimal format (ranging between [0x0 - 0x7]),
+i.e. bitwise OR of currently enabled boot types. The following are the
+supported boot types:
+.RS
+.RS
+.TP
+\fBNIC_BOOT    0x1 (binary 0001)
+.TP
+\fBFCoE_BOOT   0x2 (binary 0010)
+.TP
+\fBiSCSI_BOOT  0x4 (binary 0100)
+.TP
+.RE
+.RE
+So, if the current boot setting is '0x3', that means NIC and FCoE boot are currently enabled
+.TP
+\fBmodifyboot-cfg\fR [\fIparam\fR \fIvalue\fR]
+Modify the boot settings in the adapter flash.
+
+Parameters for modifying boot settings:
+.RS
+.TP
+\fBbios\fR \fI<value>\fR
+The value should be bitwise OR of the boot types that are to be enabled.
+.RS
+.TP
+\fBFor example:
+.TP
+\fB1. If value is set to 0x1, only NIC_BOOT for all the ports will be enabled.
+.TP
+\fB2. If value is set to ‘0x6’ i.e. 0x2 | 0x4  (FCoE_BOOT | iSCSI_BOOT) FCoE_BOOT and iSCSI_BOOT will be
+enabled and NIC_BOOT will be disabled for all the ports.
+.TP
+NOTE: The bios value provided should be in decimal/hexadecimal format and the range should not exceed [0x0 - 0x7]
+.RE
+.TP
+\fBport\fR \fI<port no>\fR
+Port value should be 0 for port 0, 1 for port 1 and so on
+.RS
+.TP
+NOTE: 1) The port value provided should be in decimal/hexadecimal format and
+         the range should not exceed max number of ports
+.TP
+      2) Disabling or Enabling NIC_BOOT for all the ports will affect bios
+         NIC_BOOT setting.
+.TP
+      3) Can be used only with vlan, en_nicboot and dis_nicboot parameters and
+         cannot be used with bios parameter.
+.RE
+.TP
+\fBvlan\fR \fI<vlan id>\fR
+Used to set vlan id of the port, value should be in decimal format and the range should
+not exceed [0 - 4095]. It should be used with port parameter.
+.TP
+\fBen_nicboot\fR
+Used with port parameter to enable NIC_BOOT on a given port.
+.TP
+\fBdis_nicboot\fR
+Used with port parameter to disable NIC_BOOT on a given port.
+.TP
+Eg:
+.TP
+Enable NIC boot for all the ports; Disable iSCSI_BOOT and FCoE_BOOT
+cxgbtool ens15f4  modifyboot-cfg  bios  0x1
+.TP
+Disable FCoE_BOOT and NIC boot for all the ports; Enable iSCSI_BOOT
+cxgbtool ens15f4  modifyboot-cfg  bios  0x4
+.TP
+Disable all boot:
+cxgbtool ens15f4  modifyboot-cfg  bios 0
+.TP
+Enable NIC boot only for port 0:
+cxgbtool  ens15f4 modifyboot-cfg en_nicboot port 0
+.TP
+Disable NIC boot only for port 0:
+cxgbtool  ens15f4 modifyboot-cfg dis_nicboot port 0
+.TP
+Set vlan id 1000 for port 0
+cxgbtool ens15f4  modifyboot-cfg   port 0 vlan 1000
+.RE
+.TP
+\fBlro \fBon\fR|\fBoff\fR
+Enable or disable LRO for all queues on the interface. This is a shortcut to
+globally modify LRO for all queue-sets assigned to a port. To enable/disable
+LRO on specific queues, use the \fBqset\fR option.
+.TP
+\fBmdio\fR \fIphy-addr\fR \fIMMD-addr\fR \fIregister-addr\fR [\fIvalue\fR]
+Display or set t./cxgbtool ens15f4  modifyboot-cfg  bios  1he value of a register accessible over the MDIO interface.
+.TP
+\fBi2c\fR \fIport\fR \fIdevice\fR \fIoffset\fR \fIlen\fR [\fIbyte(s)\fR]
+Display or write a set of bytes in an I2C-connected device.  If the device
+is associated with a \fIport\fR then the port number is required; otherwise
+the string "\fBnone\fR" or "\fB-\fR" may be used for the port parameter.  If
+no \fIbyte(s)\fR parameter(s) are provided (as a sequence in integer values)
+then a read is implied.
+.TP
+\fBmemdump\fR \fImemory\fR \fIaddr\fR \fIcount\fR
+Display the contents of \fIcount\fR bytes of the given memory starting at
+address \fIaddr\fR.  Both the address and the count must be multiples of 8.
+\fImemory\fR must be one of \fBcm\fR, \fBtx\fR, or \fBrx\fR.
+.TP
+\fBmeminfo\fR
+Display the memory maps for on-card memories.
+.TP
+\fBmtus\fR [\fImtu0\fR...\fImtuN\fR]
+Display or set the contents of the on-chip MTU table.  If an MTU list is
+supplied it must be sorted in ascending order.  Modifying the MTU table
+must be done before enabling any ports on the card or activating TCP
+offloading.  The number of mtus depends on the card.
+.TP
+\fBnapi \fBon\fR|\fBoff\fR
+Enable or disable NAPI for all queues on the interface. When NAPI is disabled,
+the interface will use irq mode. This is a shortcut to globally change
+the interrupt mode for all queue-sets assigned to a port. To enable/disable
+NAPI on specific queues, use the \fBqset\fR option.
+.TP
+\fBpktsched\fR \fBport\fR \fIindex\fR \fImin%\fR \fImax%\fR
+Configure minimum (\fImin%\fR) and maximum (\fImax%\fR) transmit port
+(\fIindex\fR) utilization for non-offload traffic.  Without these
+limitations non-offload transmit traffic may block offload transmit traffic.
+The default values are 50 and 100 indicating that non-offload will be
+limited to 50% of the port's transmit capability when offload traffic is
+competing for transmit bandwidth, and will be allowed to use 100% of the
+transmit capacity when no offload traffic is present.
+.TP
+\fBpktsched\fR \fBtunnelq\fR \fIindex\fR \fImax%\fR
+Configure the maximum percentage (\fImax%\fR) of allowed non-offload
+transmit bandwidth for which a non-offload (tunnel) transmit queue
+(\fIindex\fR) is allowed to compete.  (The total allowed non-offload
+transmit bandwidth is configured via the \fBpktsched\fR \fBport\fR described
+above.)  This can be useful in order to limit a non-offload transmit queue
+to a traffic rate matched to a consuming peer application and prevent
+burstiness in the network.  It is allowed to specify 100 for all non-offload
+transmit queues which would mean that each queue would try to utilize 100%
+of the total allowed non-offload transmit bandwidth (this is the default).
+The number of non-offload transmit queues is hardware-specific.  For
+\fBT3\fR-based adapters, there are 8 non-offload transmit queues.
+.TP
+\fBpktsched\fR \fBtx\fR \fIindex\fR [\fIparam\fR \fIval\fR] ...
+Configure the hardware Offload Transmit Traffic Shaping Class schedulers.
+\fIindex\fR identifies which Traffic Shaping Class scheduler to
+configure, the possible values depend on the adapter model.  The accepted
+parameters are \fBmode\fR, \fBchannel\fR, \fBrate\fR, \fBipg\fR, and
+\fBflowipg\fR.  \fBmode\fR can have the values \fBclass\fR or \fBflow\fR to
+set the scheduler in per-class or per-flow mode, respectively.  \fBchannel\fR
+specifies which Tx channel the scheduler will be mapped to.  The value is an
+integer whose range depends on the adapter capabilities.  \fBrate\fR specifies
+the value for the scheduler's byte-rate limiter in Kbps, \fBipg\fR specifies
+the setting for the scheduler's per-class inter-packet delay in tenths of
+nanoseconds, and \fBflowipg\fR specifies the value for the per-flow inter-packet
+delay in microseconds.  Omitted parameters retain their current settings.
+
+Note that the \fBrate\fR, \fBipg\fR, and \fBflowipg\fR values must lie in
+certain adapter-dependent ranges and values outside those ranges will trigger
+an "invalid argument" error.
+.TP
+\fBsched-class\fR \fBconfig\fR [\fIparam\fR \fIvalue\fR] ...
+Configure optional feature capabilities for the TX scheduler.
+.RS
+.TP
+\fBtype\fR \fIscheduler-type\fR
+Use \fBpacket\fR for the packet scheduler.
+.TP
+\fBminmax\fR \fIvalue\fR
+A non-zero value will enable "minmax" mode; a zero value will disable
+"minmax" mode.
+.RE
+.IP
+NOTE: Many (most) of the parameters and constraints are adapter-specific
+\(em for instance the number of channels and classes which are available,
+whether various modes are implemented, etc.  Consult the adapter documentation
+for specific information on any limitations.
+.TP
+\fBsched-class\fR \fBparams\fR [\fIparam\fR \fIvalue\fR] ...
+Configure parameters for a scheduling class.
+.RS
+.TP
+\fBchannel\fR \fIscheduler-channel-index\fR
+The scheduling channel to which the scheduling class will be bound.  This
+parameter is required.
+.TP
+\fBclass\fR \fIscheduler-class-index\fR
+The scheduling class being programmed.  This parameter is required.
+.TP
+\fBlevel\fR \fIscheduler-hierarchy-level\fR
+The "level" within the scheduling hierarchy which is being programed:
+.RS
+.TP
+\fBcl-rl\fR
+Class Rate Limiting.
+.TP
+\fBcl-wrr\fR
+Class Weighted Round Robin.
+.TP
+\fBch-rl\fR
+Channel Rate Limiting.
+.RE
+.TP
+\fBmode\fR \fIscheduler-mode\fR
+The mode in which the scheduling class is going to operate:
+.RS
+.TP
+\fBclass\fR
+All of the "flows" bound to the scheduling class will be held to aggregate
+scheduling constraints.
+.TP
+\fBflow\fR
+Each of the "flows" bound to the scheduling class will be held to the
+scheduling constraints.
+.P
+E.g. if the scheduling class has a TX bandwidth of 10Mb/s, in \fBclass\fR
+mode, all of the "flows" bound to the class would be limited to an aggregate
+bandwidth of 10Mb/s; but in \fBflow\fR mode, each of the "flows" bound to
+the scheduling class would be limited to 10Mb/s.
+.RE
+.TP
+\fBtype\fR \fIscheduler-type\fR
+Use \fBpacket\fR for the packet scheduler.
+.TP
+\fBrate-unit\fR \fIscheduler-rate-unit\fR
+The units of the scheduler rate constraints:
+.RS
+.TP
+\fBbits\fR
+bit rate in Kb/s.
+.TP
+\fBpkts\fR
+packets/s.
+.RE
+.TP
+\fBrate-mode\fR \fIscheduler-rate-mode\fR
+The mode of the scheduler rate constraints:
+.RS
+.TP 10
+\fBrelative\fR
+percent of port rate.
+.TP 10
+\fBabsolute\fR
+Kb/s.
+.RE
+.TP
+\fBmin-rate\fR \fIminimum-rate\fR
+The minimum guaranteed rate to which a rate-limiting scheduling class
+hierarchy will have access.
+.TP
+\fBmax-rate\fR \fImaximum-rate\fR
+The maximum rate for a rate-limiting scheduling class hierarchy.
+.TP
+\fBweight\fR \fIround-robin-weight\fR
+The weight to be used for a weighted-round-robin scheduling hierarchy.
+.TP
+\fBpkt-size\fR \fIaverage-packet-size\fR
+The average packet size will be used to compute scheduler constraints for
+a rate-limited scheduler class hierarchy.
+.TP
+\fBburst-size\fR \fIburst-size-bytes\fR
+The amount of data, in bytes, released onto the "wire" in each burst as data
+is paced out the network interface for \fBflow mode\fR Traffic Management
+Classes.  The default \fBburst-size\fR is 4*\fBpkt-size\fR.  The
+\fBburst-size\fR must be larger than the \fBpkt-size\fR.
+.RE
+.IP
+NOTE: Many (most) of the parameters and constraints are adapter-specific
+\(em for instance the number of channels and classes which are available,
+whether various modes are implemented, etc.  Consult the adapter documentation
+for specific information on any limitations.
+.TP
+\fBsched-class\fR \fBshow\fR [\fIparam\fR \fIvalue\fR] ...
+Display configured parameters for a scheduling class.
+.RS
+.TP
+\fBchannel\fR \fIscheduler-channel-index\fR
+The scheduling channel to which the scheduling class will be bound.  This
+parameter is required.
+.TP
+\fBclass\fR \fIscheduler-class-index\fR
+The scheduling class being programmed.  This parameter is required.
+.IP
+.RE
+\fBsched-queue\fR \fIqueue\fR \fIclass\fR
+Bind the indicated NIC TX \fIqueue\fR to the specified TX Scheduler
+\fIclass\fR.  If the TX \fIqueue\fR is \fBall\fR, \fB*\fR or any negative
+value, the binding will apply to all of the TX queues associated with the
+\fIinterface\fR.  If the class is \fBunbind\fR or \fBclear\fR, the TX
+queue(s) will be unbound from any current TX Scheduler Class binding.
+.TP
+\fBsched-pfvf\fR \fIpf\fR \fIvf\fR \fIclass\fR
+Bind the NIC TX Queues of a PCI Physical or Virtual Function to the
+specified TX Scheduler \fIclass\fR.  All current and future allocated NIC TX
+Queues for the PCI Function will be affected.  To specify a PF, \fIvf\fR
+should be \fB0\fR.  To specify a VF of a PF, \fIvf\fR should be \fB1\fR or
+greater.  If \fIclass\fR is \fBunbind\fR or \fBclear\fR, the TX queue(s)
+will be unbound from any current TX Scheduler Class binding.
+.TP
+\fBpm\fR [\fITx-pages\fR \fIRx-pages\fR]
+Display or set the number and size of Tx and Rx pages for the on-chip payload
+memory.  The page specifiers are of the form
+.I number-of-pages\fBx\fIpage-size-in-KB\fR.
+Modifying memory settings must be done before enabling any ports on the card
+or activating TCP offloading.
+.TP
+\fBpolicy\fR \fIoffload-policy\fR
+set the offload policy of the device.  \fIoffload-policy\fR can be \fBnone\fR
+to clear any existing policy or a path to a policy file generated by the
+\fBcop(8)\fR utility.
+.TP
+\fBproto\fR
+Dump the contents of the protocol SRAM.
+.TP
+\fBqset\fR [\fIindex\fR {\fIparam\fR \fIvalue\fR} ...]
+Display or set the parameters of the SGE queue sets.  The parameters that may
+be specified are \fBtxq0\fR, \fBtxq1\fR, \fBtxq2\fR, \fBrspq\fR, \fBfl0\fR,
+\fBfl1\fR, \fBcong\fR, \fBlat\fR, and \fBmode\fR.  For \fBtxq0\fR, \fBtxq1\fR,
+\fBtxq2\fR, \fBrspq\fR, \fBfl0\fR, and \fBfl1\fR the supplied value specifies
+the number of entries of the corresponding queue in the queue set, \fBcong\fR
+is the congestion threshold for the free lists in T3 (Not Applicable for
+> T3), \fBlat\fR is the interrupt coalescing latency for the queue set in
+microseconds, \fBmode\fR specifies the service mode for the response queue
+and can be \fBirq\fR or \fBnapi\fR, and \fBlro\fR specifies if Large Receive
+Offload is enabled \fB1\fR or disabled \fB0\fR. \fBcongmode\fR is the TP
+congestion mode configured for >= T5 (Not Applicable for < T5)(\fB0\fR -
+Disabled (No congestion notification), \fB1\fR - Queue (Drop packets to queue
+when congested), \fB2\fR - Channel (Default, Backpressure channel when queue
+is congested), \fB3\fR - Both Queue and Channel). Omitted parameters retain
+their current value. If no parameters are specified, then the current settings
+for all queue sets are displayed.
+
+Note that the mode can be set independently for each queue set only when using
+MSI-X interrupts.  In other cases a mode change applies to all queue sets.
+.TP
+\fBqintr\fR \fIqid\fR [{\fIparam\fR \fIvalue\fR} ...]
+Display or set the Interrupt Coalescing parameters for a specified Response
+Queue.  Available parameters are \fBtimer\fR and \fBcount\fR.  These control
+the Interrupt Holdoff parameters used to coalesce and control the number of
+interrupts a Response Queue can inject into the system.  The \fBtimer\fR
+parameter specifies how many minimum number of microseconds between
+interrupts.  The \fBcount\fR parameter specifies an ingress message count
+threshold override which will force an interrupt to be delivered regardless
+of the \fBtimer\fR value.  Either of these interrupt coalescing features can
+be disabled by setting them to 0.  However, if an attempt is made to turn
+both off, the driver will assume a \fBcount\fR of \fB0\fR.  Note that
+hardware or driver limitations may restrict the set of available values for
+the \fBtimer\fR and \fBcount\fR parameters.  When a specified value isn't
+available, the closest available value will be selected.
+.TP
+\fBqsets\fR [\fIcount\fR]
+Display or set the number of Ethernet Queue Sets assigned to the given
+interface.
+.TP
+\fBqtype-num\fR \fIqtype\fR [\fIcount\fR]
+Display or set the number of Queues of type \fIqtype\fR assinged to the
+given interface.  \fIqtype\fR may be one of the following:
+.RS
+.IP \fBeth\fR
+Ethernet Queue Sets (this is an alias for the \fBqsets\fR command).
+.IP \fBofld\fR
+General Offload Queue Sets.
+.IP \fBrdma\fR
+RDMA RX Queues.
+.IP \fBrciq\fR
+RDMA Concentrator RX Queues.
+.IP \fBiscsi\fR
+iSCSI RX Queues.
+.IP \fBiscsit\fR
+iSCSIT TX Queues.
+.IP \fBcrypto\fR
+Crypto RX Queues.
+.IP \fBcryptot\fR
+Crypto TX Queues.
+.RE
+.IP
+Note that there are adapter- and driver-specific limitations on the maximum
+number of queues available for each type and in total.  Additionally, some
+drivers may further restrict how queues are laid out for different queue
+types.  For instance, some drivers may restrict all interfaces on an adapter
+to have the same number of queues for particular queue type.  This is a
+driver specific restriction and the driver is responsible for maintaining
+its restrictions.
+.TP
+\fBsend-workreq\fR \fIqid\fR \fIbyte\fR [\fIbyte\fR ...]
+Send an arbitrary Work Request on an arbitrary TOE TX or Control Queue.
+.IP
+This command is 
+for debug and diagnostic purposes only and should only be used under 
+supervision of Chelsio personnel.
+.IP
+.B Caution:
+This is insanely dangerous!!  It's trivial to hang the chip or cause it to
+DMA to/from arbitrary memory areas.  No checking is performed whatsoever by
+cxgbtool and probably minimal checking is performed by the Host Driver.  If
+you're lucky, the Host Driver won't have any support compiled in to
+implement this command and you'll be spared the ugliness of having to
+explain to your co-workers, boss, spouse, the janitor, etc. why exactly it
+was that you found it neccessary to cause the adapter to catch on fire and
+trigger World War Three.  Needless-to-say [but we're going to say it
+anyways], the content and format of these messages is completely
+adapter-specific.
+.IP
+If you're still convinced that you want to do this, here's an example of how
+to hurt yourself and gain new enemies in the ranks of your co-workers.  This
+T4+ example sends a FW_TP_WR Work Request which is used to send a
+CPL_RX_DATA_ACK to a TOE connection on TID 0xbbc to force an ACK segment to
+immediately be sent to its peer.  In this example, queue 120 is a control queue.
+.IP
+\fBcxgbtool eth6 send-workreq 120 5 0 0 8 0 0xb 0xbc 2 0 0 0 0 0 0 0 0  0x0d 0
+0xb 0xbc 0xb0 0 0 0 0 0 0 0 0 0 0 0\fR
+.TP
+\fBclearstats\fR [\fBport\fR|\fBqueue\fR [\fIindex\fR]]
+clear statistics.  \fBport\fR clears interface statistics, \fBqueue\fR clears
+statistics for all queue sets associated with \fIinterface\fR if no index is
+specified or just the statistics of the queue set \fIindex\fR.  Without optional
+arguments the command clears all statistics.
+.TP
+\fBconfigure_ringbb\fR [{\fIparam\fR \fIvalue\fR} ...]
+configure ring backbone filters. Sets all necessary drop/switch filters for
+driver enabled with 'enable_ringbb' module parameter.
+.RS
+.TP
+\fB pf\fR
+PCI-E Physical Function ID.
+.TP
+\fB vi\fR
+Virtual interface id  associated with port0. You can get this from mps_tcam debug file by
+checking the VF entry corresponding to port0 mac address.
+.TP
+\fB mvi\fR
+Virtual interface id configured for mirroring traffic. You will get this
+from dmesg, once you load cxgb4 driver with ring backbone enabled.
+.TP
+\fB hitcnts\fR
+Count filter hits: 0 (default) or 1.
+.TP
+\fB tunnel \fR [\fItunnel_interface name\fR] ...
+The vxlan/geneve interface name, if ring needs to support them. You can give multiple interfaces
+by providing the \fB tunnel \fR [\fItunnel_interface name\fR] list again.
+.TP
+.RE
+.TP
+.TP
+\fBreg\fR \fIaddress\fR[\fB=\fIvalue\fR]
+Display or set the value of the device register at \fIaddress\fR.  This
+operation applies to device registers accessible on the PCI bus.
+.TP
+\fBregdump\fR [\fImodule\fR]
+Dump the registers of a HW module.  Supported module names are \fBsge\fR,
+\fBtp\fR, \fBpl\fR, \fBpci\fR, \fBt3dbg\fR, \fBpmrx\fR, \fBpmtx\fR, \fBcm\fR,
+\fBcim\fR, \fBulp_rx\fR, \fBulp_tx\fR, \fBpmrx\fR, \fBpmtx\fR, \fBmps\fR,
+\fBcplsw\fR, \fBsmb\fR, \fBi2c\fR, \fBmi1\fR, \fBsf\fR, \fBxgmac0\fR, \fBxgmac1\fR,
+and \fBmc5\fR. Not all modules are available on all cards. If the module is not
+specified, all modules will be displayed.
+.TP
+\fBtcamdump\fR \fIaddress\fR \fIcount\fR
+Display \fIcount\fR TCAM entries starting at \fIaddress\fR.
+.TP
+\fBtcb\fR \fIindex\fR
+Display the contents of a TCB.
+.TP
+\fBtrace\fR \fBtx\fR|\fBrx\fR|\fBall\fR \fBon\fR|\fBoff\fR [\fBnot\fR] [\fIparam\fR \fIval\fR[:\fImask\fR]] ...
+Configure the packet tracing filters for T3.  The first argument selects the filter(s)
+to be programmed, and the second selects whether packet tracing is to be
+enabled or not for the specified filters.  The filter parameters that may be
+specified are \fBinterface\fR, \fBsip\fR, \fBdip\fR, \fBsport\fR, \fBdport\fR,
+\fBvlan\fR, and \fBproto\fR.  For each parameter a value and an optional mask
+can be specified.  If the mask is omitted it defaults to all 1s, i.e., the
+value will be matched exactly.  If a parameter is omitted its mask defaults to
+0 and the parameter is treated as a wildcard.  If the optional \fBnot\fR is
+specified the matching criteria are inverted, i.e., packets that do not match
+the criteria will be traced.
+.TP
+\fBtrace\fR \fBtx\fR|\fBrx\fR|\fBall
+Display the packet tracing filters for T3.
+.TP
+\fBmpstrace\fR \fIindex\fR \fBrx\fR|\fBtx\fR|\fBloopback\fR|\fBoff\fR [\fIchannel\fR] [\fBnot\fR] [\fIparam\fR \fIval\fR] ...
+Configure the MPS packet tracing filters for T5+. \fIindex\fR selects
+the one of the four trace filters available. Each filter can trace
+packets at one of the following three levels:
+.RS
+.TP
+.B rx
+MAC Rx channels. Valid values for \fIchannel\fR are 0..3.
+.TP
+.B tx
+MAC Tx channels. Valid values for \fIchannel\fR are 0..3.
+.TP
+.B loopback
+Loopback channels. Valid values for \fIchannel\fR are 0..3.
+.RE
+.IP
+Each filter can be further configured to place restrictions on
+packets being traced using following options:
+.RS
+.TP
+.B not
+Invert match; i.e. match all traffic that don't match the specified
+pattern.
+.TP
+.B snaplen
+Length of the capture in bytes from beginning of the packet. Be sure
+not to exceed FIFO depth of 2.5KB when multi tracing is enabled, or
+10KB when multi tracing is disabled. \fBAllow 32 bytes of extra FIFO
+space per packet for packet header\fR. For example, to capture the
+first 64 Bytes of the packet, the \fBsnaplen\fR value must be set to
+64.
+.TP
+.B minlen
+Packets smaller than this size are not captured.
+.TP
+.B data
+Data pattern in the packet to match from beginning of the packet. Max
+size of data pattern is 112 Bytes. Pattern must be in hexadecimal, as
+visible in the packet.
+.TP
+.B mask
+Don't care mask for the \fBdata\fR pattern being matched. If no
+\fBmask\fR is specified, a default mask of ~0 is written.
+.TP
+.B skipoff
+Skip offset in units of 32 bytes. Filter comparison stops when
+\fBskipoff\fR byte is reached in \fBdata\fR pattern. If \fBskiplen\fR
+is specified, then parsing will continue after skipping \fBskiplen\fR
+bytes from the \fBskipoff\fR byte. Otherwise, parsing stops, as soon
+as \fBskipoff\fR byte has been reached. For example, to skip parsing
+packet after 32 bytes, then \fBskipoff\fR value must be set to 1.
+.TP
+.B skiplen
+Length of the filter skip in units of 32 bytes. Filter comparison
+continues from where it left off after \fBskiplen\fR * 8 bytes of the
+packet have been skipped in \fBdata\fR pattern. For example, to
+continue parsing packet after skipping 64 bytes from \fBskipoff\fR
+byte, then \fBskiplen\fR value must be set to 2.
+.RE
+.TP
+\fBmpstrace\fR \fIindex\fR
+Display the current MPS packet tracing filter parameters configured
+at one of the four trace filters specified in \fIindex\fR. Only
+available for T5+.
+.TP
+\fBioqs\fR
+Display the firmware egress ioqs.
+.TP
+\fBla\fR
+Display the firmware Logic analyzer trace.
+.TP
+.B up
+Enable TCP offloading.
+.TP
+\fBwdtoe\fR \fIstats\fR [\fIpid\fR]
+Dump WireDirect TCP statistics.  If \fIpid\fR is provided, then only
+stats for that process will be dumped.  Otherwise stats for all active
+processes on the system will be dumped.
+.TP
+\fBwdudp\fR \fIstats\fR [\fIpid\fR]
+Dump WireDirect UDP statistics.  If \fIpid\fR is provided, then only
+stats for that process will be dumped.  Otherwise stats for all active
+processes on the system will be dumped.
+.SH BUGS
+None known.
+.SH "SEE ALSO"
+ifconfig(8), ip(8), ethtool(8), mii-tool(8), cop(8), bootcfg(8), cxgbtool-stor(8)
+.SH "AUTHOR"
+.B cxgbtool
+was written by Dimitris Michailidis.
+.SH "AVAILABILITY"
+.B cxgbtool
+is available from Chelsio Communications.

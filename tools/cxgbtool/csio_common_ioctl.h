@@ -1,0 +1,118 @@
+/*
+ *  Copyright (C) 2019-2021 Chelsio Communications.  All rights reserved.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the LICENSE file included in this
+ * release for licensing terms and conditions.
+ * 
+ * Description: Data structures,constants & enum definitions common to all
+ * storage driver IOCTLs
+ * 
+ */
+
+#ifndef	__CSIO_COMMON_IOCTL_H__
+#define	__CSIO_COMMON_IOCTL_H__
+
+#ifdef __KERNEL__
+#include <linux/types.h>
+#endif
+
+#define CSIO_MIN_IFID_NUM  0
+#define CSIO_MAX_IFID_NUM  3
+#define CSIO_INV_IFID_NUM  255
+#define CSIO_MIN_PORT_NUM  0
+#define CSIO_MAX_PORT_NUM  65535
+#define CSIO_MIN_VLAN_NUM  2
+#define CSIO_MAX_VLAN_NUM  4095
+#define CSIO_VLAN_MASK     0x0FFF
+
+#define csio_vlan_valid(vlanid) \
+	(((vlanid & CSIO_VLAN_MASK) >= CSIO_MIN_VLAN_NUM) && \
+			((vlanid & CSIO_VLAN_MASK) < CSIO_MAX_VLAN_NUM))
+
+enum csio_app_err {
+	CSIO_EINVALID_INDEX,
+	CSIO_EINST_EXISTS,
+	CSIO_EMAX_INST_EXCEEDS,
+	CSIO_ENORES,
+	CSIO_EINVALID_INST_NAME,
+	CSIO_EINVALID_OPER,
+	CSIO_EINST_NOT_FOUND,
+	CSIO_EINST_BUSY,
+	CSIO_EZERO_OBJ_FOUND,
+	CSIO_EIFACE_NOT_PROVISIONED,
+	CSIO_ENOMEM,
+	CSIO_ESESSION_EXISTS,
+	CSIO_EPARAM,
+	CSIO_EINVALID_REQUEST,
+	CSIO_ELOGIN_TIMEDOUT,
+	CSIO_EIFACE_INVALID_PORT,
+	CSIO_EIFACE_BUSY,
+	CSIO_ENODEV,
+	CSIO_EIFACE_ENOLINK,
+	CSIO_EINVAL,
+	CSIO_ENOSYS,
+	CSIO_ELISTEN_FAIL,
+	CSIO_ENODE_INIT_FAIL,
+	CSIO_EADDRINUSE,
+	CSIO_EADDRNOTAVAIL,
+	CSIO_ECFG_RD_FAIL,
+	CSIO_EISNS_OP_FAIL,
+	CSIO_EAGAIN,
+	CSIO_EINVALID_INIT_INST,
+	CSIO_EINIT_INST,
+	CSIO_ELAST,
+};
+
+enum csio_app_op {
+	CSIO_APP_OP_NOOP	= 0x00,
+	CSIO_APP_OP_ASSIGN	= 0x01,
+	CSIO_APP_OP_CLEAR	= 0x02,
+	CSIO_APP_OP_SHOW	= 0x03,
+	CSIO_APP_OP_LOGIN	= 0x04,
+	CSIO_APP_OP_LOGOUT	= 0x05,
+	CSIO_APP_OP_UP		= 0x06,
+	CSIO_APP_OP_DOWN	= 0x07,
+	CSIO_APP_OP_MTU		= 0x08,
+	CSIO_APP_OP_VLAN	= 0x09,
+	CSIO_APP_OP_DCBX	= 0x0a,
+	CSIO_APP_OP_LLOCAL	= 0x0b,
+	CSIO_APP_OP_MOD		= 0x0c,
+	CSIO_APP_OP_LAST	= 0x0d,
+	CSIO_APP_OP_STATS	= 0x0e,
+	CSIO_APP_OP_STATS_CLR	= 0x0f,
+	CSIO_APP_OP_PING	= 0x10,
+	CSIO_APP_OP_PMTU6_CLEAR  = 0x11,
+};
+
+enum csio_app_mod {
+	CSIO_APP_MOD_NON = -1,
+
+	CSIO_APP_MOD_FOISCSI_INIT_INST = 1,
+	CSIO_APP_MOD_FOISCSI_SSN,
+	CSIO_APP_MOD_FOISCSI_DSC,
+	CSIO_APP_MOD_FOISCSI_PRST,
+
+	CSIO_APP_MOD_COISCSI_TGT_INST,
+	CSIO_APP_MOD_COISCSI_TGT,
+
+	CSIO_APP_MOD_CHNET_IFACE,
+	CSIO_APP_MOD_CHNET_IFCONF,
+
+	CSIO_APP_MOD_ISNS_SERVER,
+	CSIO_APP_MOD_ISNS_CLIENT,
+
+	CSIO_APP_MOD_HW,
+
+	CSIO_APP_MOD_MAX,
+};
+
+struct ip_addr {
+	union {
+		uint32_t	ip4;
+		uint8_t		ip6[16];
+	};
+};
+
+#endif	/* __CSIO_COMMON_IOCTL_H__ */

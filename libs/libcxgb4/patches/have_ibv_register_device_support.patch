@@ -1,0 +1,10 @@
+diff --git a/providers/cxgb4/CMakeLists.txt b/providers/cxgb4/CMakeLists.txt
+index a9b6546..d59959b 100644
+--- a/providers/cxgb4/CMakeLists.txt
++++ b/providers/cxgb4/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NO_STRICT_ALIASING_FLAGS}")
++set(CMAKE_C_FLAGS "-DHAVE_IBV_REGISTER_DEVICE ${CMAKE_C_FLAGS} ${NO_STRICT_ALIASING_FLAGS}")
+ 
+ rdma_provider(cxgb4
+   cq.c

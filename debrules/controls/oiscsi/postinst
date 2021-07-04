@@ -1,0 +1,39 @@
+#!/bin/sh
+ 
+# Exit on error
+set -e
+BINPATH=/usr/local/sbin/
+
+if [ -f $BINPATH/iscsiadm2 ]
+then
+        ln -s $BINPATH/iscsiadm2 $BINPATH/iscsiadm
+fi;
+
+if [ -f $BINPATH/iscsid2 ]
+then
+        ln -s $BINPATH/iscsid2 $BINPATH/iscsid
+fi
+
+if [ -f $BINPATH/iscsi-iname2 ]
+then
+        ln -s $BINPATH/iscsi-iname2 $BINPATH/iscsi-iname
+fi
+
+if [ -f /etc/iscsi/iscsid.conf.2 ]
+then
+        ln -s /etc/iscsi/iscsid.conf.2 /etc/iscsi/iscsid.conf
+fi
+
+if [ -f $BINPATH/iscsi_discovery2 ]
+then
+        ln -s $BINPATH/iscsi_discovery2 $BINPATH/iscsi_discovery
+fi
+
+if [ ! -f /etc/iscsi/initiatorname.iscsi ];
+then
+    echo "InitiatorName=`$BINPATH/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi ;
+fi
+
+## Generate new module dependencies.
+depmod 2>/dev/null
+exit 0

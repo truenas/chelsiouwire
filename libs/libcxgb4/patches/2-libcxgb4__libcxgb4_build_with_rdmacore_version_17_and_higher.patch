@@ -1,0 +1,217 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1535466641 -19800
+#      Tue Aug 28 20:00:41 2018 +0530
+# Node ID a85de3ff201bda678b22fbaa3e59356798d58d97
+# Parent  6cac34c492256de197b6abe8e40d59ea42b8ffe5
+libcxgb4: libcxgb4 build with rdmacore version 17 and higher
+
+commit 1111cf9895bb6e079f670af12cc49e2c6592062d
+Author: Jason Gunthorpe <jgg@mellanox.com>
+Date:   Wed Dec 13 16:31:48 2017 -0700
+
+    verbs: Always allocate a verbs_context
+
+commit 926c4df55e5bfc18b4633fdc0afb220313cd68f9
+Author: Jason Gunthorpe <jgg@mellanox.com>
+Date:   Thu Dec 14 20:24:37 2017 -0700
+
+    verbs: Convert all providers to use verbs_set_ops
+
+diff -r 6cac34c49225 -r a85de3ff201b rdma-core/providers/cxgb4/cxgb4-abi.h
+--- a/rdma-core/providers/cxgb4/cxgb4-abi.h	Tue Aug 28 19:58:53 2018 +0530
++++ b/rdma-core/providers/cxgb4/cxgb4-abi.h	Tue Aug 28 20:00:41 2018 +0530
+@@ -35,13 +35,13 @@
+ #include <infiniband/kern-abi.h>
+ 
+ struct c4iw_alloc_ucontext_resp {
+-	struct ibv_get_context_resp ibv_resp;
++	struct ib_uverbs_get_context_resp ibv_resp;
+ 	__u64 status_page_key;
+ 	__u32 status_page_size;
+ };
+ 
+ struct c4iw_alloc_pd_resp {
+-	struct ibv_alloc_pd_resp ibv_resp;
++	struct ib_uverbs_alloc_pd_resp ibv_resp;
+ 	uint32_t pdid;
+ };
+ 
+@@ -51,7 +51,7 @@ struct c4iw_create_cq_req {
+ };
+ 
+ struct c4iw_create_cq_resp {
+-	struct ibv_create_cq_resp ibv_resp;
++	struct ib_uverbs_create_cq_resp ibv_resp;
+ 	__u64 key;
+ 	__u64 gts_key;
+ 	__u64 memsize;
+@@ -66,7 +66,7 @@ enum {
+ };
+ 
+ struct c4iw_create_qp_resp_v0 {
+-	struct ibv_create_qp_resp ibv_resp;
++	struct ib_uverbs_create_qp_resp ibv_resp;
+ 	__u64 sq_key;
+ 	__u64 rq_key;
+ 	__u64 sq_db_gts_key;
+@@ -81,7 +81,7 @@ struct c4iw_create_qp_resp_v0 {
+ };
+ 
+ struct c4iw_create_qp_resp {
+-	struct ibv_create_qp_resp ibv_resp;
++	struct ib_uverbs_create_qp_resp ibv_resp;
+ 	__u64 ma_sync_key;
+ 	__u64 sq_key;
+ 	__u64 rq_key;
+@@ -111,7 +111,7 @@ struct c4iw_create_raw_qp_req {
+ };
+ 
+ struct c4iw_create_raw_qp_resp {
+-	struct ibv_create_qp_resp ibv_resp;
++	struct ib_uverbs_create_qp_resp ibv_resp;
+ 	union {
+ 		__u64 ma_sync_key;
+ 		__u64 txq_bar2_key;
+@@ -143,7 +143,7 @@ struct c4iw_reg_mr_req {
+ };
+ 
+ struct c4iw_reg_mr_resp {
+-	struct ibv_reg_mr_resp ibv_resp;
++	struct ib_uverbs_reg_mr_resp ibv_resp;
+ 	__u32 page_size;
+ };
+ 
+@@ -154,7 +154,7 @@ struct c4iw_create_raw_srq_req {
+ };
+ 
+ struct c4iw_create_raw_srq_resp {
+-	struct ibv_create_srq_resp ibv_resp;
++	struct ib_uverbs_create_srq_resp ibv_resp;
+ 	__u64 db_key;
+ 	__u64 fl_key;
+ 	__u64 iq_key;
+@@ -171,7 +171,7 @@ struct c4iw_create_raw_srq_resp {
+ };
+ 
+ struct c4iw_create_srq_resp {
+-	struct ibv_create_srq_resp ibv_resp;
++	struct ib_uverbs_create_srq_resp ibv_resp;
+ 	__u64 srq_key;
+ 	__u64 srq_db_gts_key;
+ 	__u64 srq_memsize;
+diff -r 6cac34c49225 -r a85de3ff201b rdma-core/providers/cxgb4/dev.c
+--- a/rdma-core/providers/cxgb4/dev.c	Tue Aug 28 19:58:53 2018 +0530
++++ b/rdma-core/providers/cxgb4/dev.c	Tue Aug 28 20:00:41 2018 +0530
+@@ -79,7 +79,7 @@ bool is_t5_enable_wc_in_env = false;
+ 
+ static LIST_HEAD(devices);
+ 
+-static struct ibv_context_ops c4iw_ctx_ops = {
++static const struct verbs_context_ops  c4iw_ctx_common_ops = {
+ 	.query_device = c4iw_query_device,
+ 	.query_port = c4iw_query_port,
+ 	.alloc_pd = c4iw_alloc_pd,
+@@ -105,7 +105,15 @@ static struct ibv_context_ops c4iw_ctx_o
+ 	.req_notify_cq = c4iw_arm_cq,
+ };
+ 
+-static struct ibv_context *c4iw_alloc_context(struct ibv_device *ibdev,
++static const struct verbs_context_ops c4iw_ctx_t4_ops = {
++	.async_event = c4iw_async_event,
++	.poll_cq = c4iw_poll_cq,
++	.post_recv = c4iw_post_receive,
++	.post_send = c4iw_post_send,
++	.req_notify_cq = c4iw_arm_cq,
++};
++
++static struct verbs_context *c4iw_alloc_context(struct ibv_device *ibdev,
+ 					      int cmd_fd)
+ {
+ 	struct c4iw_context *context;
+@@ -116,13 +124,10 @@ static struct ibv_context *c4iw_alloc_co
+ 	uint64_t raw_fw_ver;
+ 	struct ibv_device_attr attr;
+ 
+-	context = malloc(sizeof *context);
++	context = verbs_init_and_alloc_context(ibdev, cmd_fd, context, ibv_ctx);
+ 	if (!context)
+ 		return NULL;
+ 
+-	memset(context, 0, sizeof *context);
+-	context->ibv_ctx.cmd_fd = cmd_fd;
+-
+ 	if (ibv_cmd_get_context(&context->ibv_ctx, &cmd, sizeof cmd,
+ 				&resp.ibv_resp, sizeof resp))
+ 		goto err_free;
+@@ -136,8 +141,7 @@ static struct ibv_context *c4iw_alloc_co
+ 			goto err_free;
+ 	} 
+ 
+-	context->ibv_ctx.device = ibdev;
+-	context->ibv_ctx.ops = c4iw_ctx_ops;
++	verbs_set_ops(&context->ibv_ctx, &c4iw_ctx_common_ops);
+ 
+ 	switch (rhp->chip_version) {
+ 	case CHELSIO_T6:
+@@ -146,11 +150,7 @@ static struct ibv_context *c4iw_alloc_co
+ 		PDBG("%s T5/T4 device\n", __FUNCTION__);
+ 	case CHELSIO_T4:
+ 		PDBG("%s T4 device\n", __FUNCTION__);
+-		context->ibv_ctx.ops.async_event = c4iw_async_event;
+-		context->ibv_ctx.ops.post_send = c4iw_post_send;
+-		context->ibv_ctx.ops.post_recv = c4iw_post_receive;
+-		context->ibv_ctx.ops.poll_cq = c4iw_poll_cq;
+-		context->ibv_ctx.ops.req_notify_cq = c4iw_arm_cq;
++		verbs_set_ops(&context->ibv_ctx, &c4iw_ctx_t4_ops);
+ 		break;
+ 	default:
+ 		PDBG("%s unknown hca chip version %d\n", __FUNCTION__,
+@@ -162,8 +162,8 @@ static struct ibv_context *c4iw_alloc_co
+ 	if (!rhp->mmid2ptr) {
+ 		int ret;
+ 
+-		ret = ibv_cmd_query_device(&context->ibv_ctx, &attr, &raw_fw_ver, &qcmd,
+-					   sizeof qcmd);
++		ret = ibv_cmd_query_device(&context->ibv_ctx.context, &attr,
++					   &raw_fw_ver, &qcmd, sizeof qcmd);
+ 		if (ret)
+ 			goto err_unmap;
+ 		rhp->max_mr = attr.max_mr;
+@@ -217,6 +217,7 @@ err_free:
+ 		free(rhp->cqid2ptr);
+ 	if (rhp->fid2ptr)
+ 		free(rhp->fid2ptr);
++	verbs_uninit_context(&context->ibv_ctx);
+ 	free(context);
+ 	return NULL;
+ }
+@@ -227,6 +228,7 @@ static void c4iw_free_context(struct ibv
+ 
+ 	if (context->status_page_size)
+ 		munmap(context->status_page, context->status_page_size);
++	verbs_uninit_context(&context->ibv_ctx);
+ 	free(context);
+ }
+ 
+diff -r 6cac34c49225 -r a85de3ff201b rdma-core/providers/cxgb4/libcxgb4.h
+--- a/rdma-core/providers/cxgb4/libcxgb4.h	Tue Aug 28 19:58:53 2018 +0530
++++ b/rdma-core/providers/cxgb4/libcxgb4.h	Tue Aug 28 20:00:41 2018 +0530
+@@ -86,7 +86,7 @@ static inline int dev_is_t4(struct c4iw_
+ }
+ 
+ struct c4iw_context {
+-	struct ibv_context ibv_ctx;
++	struct verbs_context ibv_ctx;
+ 	struct t4_dev_status_page *status_page;
+ 	int status_page_size;
+ };
+@@ -212,7 +212,7 @@ static inline struct c4iw_dev *to_c4iw_d
+ 
+ static inline struct c4iw_context *to_c4iw_context(struct ibv_context *ibctx)
+ {
+-	return to_c4iw_xxx(ctx, context);
++	return container_of(ibctx, struct c4iw_context, ibv_ctx.context);
+ }
+ 
+ static inline struct c4iw_pd *to_c4iw_pd(struct ibv_pd *ibpd)

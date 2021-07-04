@@ -1,0 +1,96 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1560936081 -19800
+#      Wed Jun 19 14:51:21 2019 +0530
+# Node ID 20295a74b28b7839382c9f0fdb95a33a9f3da218
+# Parent  87103a0860ddf0e8a3036004d56956d53fe843d2
+libcxgb4: libcxgb4 build with rdmacore version 20 and higher
+
+diff -r 87103a0860dd -r 20295a74b28b rdma-core/providers/cxgb4/libcxgb4.h
+--- a/rdma-core/providers/cxgb4/libcxgb4.h	Wed Jun 19 14:44:03 2019 +0530
++++ b/rdma-core/providers/cxgb4/libcxgb4.h	Wed Jun 19 14:51:21 2019 +0530
+@@ -96,7 +96,7 @@ struct c4iw_pd {
+ };
+ 
+ struct c4iw_mr {
+-	struct ibv_mr ibv_mr;
++	struct verbs_mr vmr;
+ 	uint64_t va_fbo;
+ 	uint64_t len;
+ 	unsigned long page_size;
+@@ -235,9 +235,9 @@ static inline struct c4iw_raw_qp *to_c4i
+ 	return to_c4iw_xxx(qp, raw_qp);
+ }
+ 
+-static inline struct c4iw_mr *to_c4iw_mr(struct ibv_mr *ibmr)
++static inline struct c4iw_mr *to_c4iw_mr(struct verbs_mr *vmr)
+ {
+-	return to_c4iw_xxx(mr, mr);
++	return container_of(vmr, struct c4iw_mr, vmr);
+ }
+ 
+ static inline struct c4iw_qp *get_qhp(struct c4iw_dev *rhp, u32 qid)
+@@ -278,7 +278,7 @@ int c4iw_free_pd(struct ibv_pd *pd);
+ 
+ struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr,
+ 				  size_t length, ENUM_IBV_ACCESS_FLAGS access);
+-int c4iw_dereg_mr(struct ibv_mr *mr);
++int c4iw_dereg_mr(struct verbs_mr *vmr);
+ 
+ struct ibv_cq *c4iw_create_cq(struct ibv_context *context, int cqe,
+ 			      struct ibv_comp_channel *channel,
+diff -r 87103a0860dd -r 20295a74b28b rdma-core/providers/cxgb4/verbs.c
+--- a/rdma-core/providers/cxgb4/verbs.c	Wed Jun 19 14:44:03 2019 +0530
++++ b/rdma-core/providers/cxgb4/verbs.c	Wed Jun 19 14:51:21 2019 +0530
+@@ -134,7 +134,7 @@ static struct ibv_mr *__c4iw_reg_mr(stru
+ 	cmd.pbl_ptr = (uint64_t)(uintptr_t)mhp->sw_pbl;
+ 	resp.page_size = 1;
+ 	if (ibv_cmd_reg_mr(pd, addr, length, hca_va,
+-			   access, &mhp->ibv_mr, &cmd.ibv_cmd, sizeof cmd,
++			   access, &mhp->vmr, &cmd.ibv_cmd, sizeof cmd,
+ 			   &resp.ibv_resp, sizeof resp)) {
+ 		free(mhp);
+ 		return NULL;
+@@ -152,13 +152,13 @@ static struct ibv_mr *__c4iw_reg_mr(stru
+ 	mhp->len = length;
+ 
+ 	PDBG("%s stag 0x%x va_fbo 0x%" PRIx64 " len %d\n",
+-	     __func__, mhp->ibv_mr.rkey, mhp->va_fbo, mhp->len);
++	     __func__, mhp->vmr.ibv_mr.rkey, mhp->va_fbo, mhp->len);
+ 
+ 	pthread_spin_lock(&dev->lock);
+-	dev->mmid2ptr[c4iw_mmid(mhp->ibv_mr.lkey)] = mhp;
++	dev->mmid2ptr[c4iw_mmid(mhp->vmr.ibv_mr.lkey)] = mhp;
+ 	pthread_spin_unlock(&dev->lock);
+ 	INC_STAT(mr);
+-	return &mhp->ibv_mr;
++	return &mhp->vmr.ibv_mr;
+ }
+ 
+ struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr,
+@@ -168,20 +168,20 @@ struct ibv_mr *c4iw_reg_mr(struct ibv_pd
+ 	return __c4iw_reg_mr(pd, addr, length, (uintptr_t) addr, access);
+ }
+ 
+-int c4iw_dereg_mr(struct ibv_mr *mr)
++int c4iw_dereg_mr(struct verbs_mr *vmr)
+ {
+ 	int ret;
+-	struct c4iw_dev *dev = to_c4iw_dev(mr->pd->context->device);
++	struct c4iw_dev *dev = to_c4iw_dev(vmr->ibv_mr.pd->context->device);
+ 
+-	ret = ibv_cmd_dereg_mr(mr);
++	ret = ibv_cmd_dereg_mr(vmr);
+ 	if (ret)
+ 		return ret;
+ 
+ 	pthread_spin_lock(&dev->lock);
+-	dev->mmid2ptr[c4iw_mmid(mr->lkey)] = NULL;
++	dev->mmid2ptr[c4iw_mmid(vmr->ibv_mr.lkey)] = NULL;
+ 	pthread_spin_unlock(&dev->lock);
+ 
+-	free(to_c4iw_mr(mr));
++	free(to_c4iw_mr(vmr));
+ 
+ 	return 0;
+ }

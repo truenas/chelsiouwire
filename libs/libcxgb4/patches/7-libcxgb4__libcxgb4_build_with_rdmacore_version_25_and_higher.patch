@@ -1,0 +1,62 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1584971216 -19800
+#      Mon Mar 23 19:16:56 2020 +0530
+# Node ID e1182176f260efe2e6a2cb3d37e0f8c31949f711
+# Parent  022e9d4ce6ae5326f7c618ff1e9cce9a3018469a
+libcxgb4: libcxgb4 build with rdmacore version 25 and higher
+
+Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+
+diff -r 022e9d4ce6ae -r e1182176f260 rdma-core/providers/cxgb4/libcxgb4.h
+--- a/rdma-core/providers/cxgb4/libcxgb4.h	Mon Mar 23 18:32:27 2020 +0530
++++ b/rdma-core/providers/cxgb4/libcxgb4.h	Mon Mar 23 19:16:56 2020 +0530
+@@ -276,8 +276,8 @@ int c4iw_query_port(struct ibv_context *
+ struct ibv_pd *c4iw_alloc_pd(struct ibv_context *context);
+ int c4iw_free_pd(struct ibv_pd *pd);
+ 
+-struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr,
+-				  size_t length, ENUM_IBV_ACCESS_FLAGS access);
++struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr, size_t length,
++			   uint64_t hca_va, ENUM_IBV_ACCESS_FLAGS access);
+ int c4iw_dereg_mr(struct verbs_mr *vmr);
+ 
+ struct ibv_cq *c4iw_create_cq(struct ibv_context *context, int cqe,
+diff -r 022e9d4ce6ae -r e1182176f260 rdma-core/providers/cxgb4/verbs.c
+--- a/rdma-core/providers/cxgb4/verbs.c	Mon Mar 23 18:32:27 2020 +0530
++++ b/rdma-core/providers/cxgb4/verbs.c	Mon Mar 23 19:16:56 2020 +0530
+@@ -110,9 +110,8 @@ int c4iw_free_pd(struct ibv_pd *pd)
+ 	return 0;
+ }
+ 
+-static struct ibv_mr *__c4iw_reg_mr(struct ibv_pd *pd, void *addr,
+-				    size_t length, uint64_t hca_va,
+-				    ENUM_IBV_ACCESS_FLAGS access)
++struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr, size_t length,
++			   uint64_t hca_va, ENUM_IBV_ACCESS_FLAGS access)
+ {
+ 	struct c4iw_mr *mhp;
+ 	struct c4iw_reg_mr_req cmd;
+@@ -121,6 +120,8 @@ static struct ibv_mr *__c4iw_reg_mr(stru
+ 	int pbl_depth;
+ 	int size;
+ 
++	PDBG("%s addr %p length %ld hca_va %p\n", __func__, addr, length,
++	     hca_va);
+ 	pbl_depth = length / c4iw_page_size;
+ 	if (length % c4iw_page_size)
+ 		pbl_depth++;
+@@ -161,13 +162,6 @@ static struct ibv_mr *__c4iw_reg_mr(stru
+ 	return &mhp->vmr.ibv_mr;
+ }
+ 
+-struct ibv_mr *c4iw_reg_mr(struct ibv_pd *pd, void *addr,
+-			   size_t length, ENUM_IBV_ACCESS_FLAGS access)
+-{
+-	PDBG("%s addr %p length %ld\n", __func__, addr, length);
+-	return __c4iw_reg_mr(pd, addr, length, (uintptr_t) addr, access);
+-}
+-
+ int c4iw_dereg_mr(struct verbs_mr *vmr)
+ {
+ 	int ret;

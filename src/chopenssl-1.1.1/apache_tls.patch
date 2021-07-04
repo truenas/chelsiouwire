@@ -1,0 +1,106 @@
+--- httpd-2.4.41.orig/srclib/apr-1.7.0/network_io/unix/socket_util.c	2013-11-18 20:47:39.000000000 +0530
++++ httpd-2.4.41/srclib/apr-1.7.0/network_io/unix/socket_util.c	2020-01-20 17:15:41.147362219 +0530
+@@ -14,6 +14,9 @@
+  * limitations under the License.
+  */
+ 
++#ifdef CHELSIO_TLS_OFFLOAD
++#include "apr_arch_networkio.h"
++#endif
+ #include "apr_network_io.h"
+ #include "apr_poll.h"
+ 
+@@ -73,3 +76,9 @@
+     return APR_EGENERAL;
+ }
+ 
++#ifdef CHELSIO_TLS_OFFLOAD
++APR_DECLARE(apr_status_t) apr_socketfd_get(int *fd, apr_socket_t *sock)
++{
++	    *fd = sock->socketdes;
++}
++#endif
+--- httpd-2.4.41.orig/srclib/apr-1.7.0/include/apr_network_io.h	2017-12-12 13:35:27.000000000 +0530
++++ httpd-2.4.41/srclib/apr-1.7.0/include/apr_network_io.h	2020-01-20 19:17:54.479973033 +0530
+@@ -939,6 +939,9 @@
+ APR_DECLARE(apr_status_t) apr_mcast_interface(apr_socket_t *sock,
+                                               apr_sockaddr_t *iface);
+ 
++#ifdef CHELSIO_TLS_OFFLOAD
++APR_DECLARE(apr_status_t) apr_socketfd_get(int *fd, apr_socket_t *sock);
++#endif
+ /** @} */
+ 
+ /** @} */
+--- httpd-2.4.41.orig/modules/ssl/ssl_engine_io.c	2019-05-24 13:29:42.000000000 +0530
++++ httpd-2.4.41/modules/ssl/ssl_engine_io.c	2020-01-20 19:34:31.167998528 +0530
+@@ -245,7 +245,34 @@
+     long ret = 1;
+     bio_filter_out_ctx_t *outctx = (bio_filter_out_ctx_t *)BIO_get_data(bio);
+ 
++#ifdef CHELSIO_TLS_OFFLOAD
++    int fd = 0;
++    apr_socket_t *csd = NULL;
++
++    csd = ap_get_conn_socket(outctx->c);
++    if (csd && BIO_get_num(bio) <= 0) {
++        apr_socketfd_get(&fd, csd);
++        BIO_set_num(bio, fd);
++    }
++#endif
++
+     switch (cmd) {
++#ifdef CHELSIO_TLS_OFFLOAD
++    case BIO_C_GET_FD:
++	ret = BIO_get_num(bio);
++	break;
++    case BIO_CTRL_SET_OFFLOAD_KEY:
++	ret = BIO_set_key_context(bio, ptr);
++	if (!ret)
++	    BIO_set_offload_tx_flag(bio);
++        break;
++    case BIO_CTRL_GET_OFFLOAD_TX:
++	ret= BIO_should_offload_tx_flag(bio);
++        break;
++    case BIO_CTRL_GET_OFFLOAD_RX:
++	ret = BIO_should_offload_rx_flag(bio);
++        break;
++#endif
+     case BIO_CTRL_RESET:
+     case BIO_CTRL_EOF:
+     case BIO_C_SET_BUF_MEM_EOF_RETURN:
+@@ -542,7 +569,34 @@
+ 
+ static long bio_filter_in_ctrl(BIO *bio, int cmd, long num, void *ptr)
+ {
++#ifdef CHELSIO_TLS_OFFLOAD
++    int ret = -1;
++    int fd = 0;
++    apr_socket_t *csd = NULL;
++
++    bio_filter_in_ctx_t *inctx = (bio_filter_in_ctx_t *)BIO_get_data(bio);
++    csd = ap_get_conn_socket(inctx->f->c);
++    if (csd && BIO_get_num(bio) <= 0) {
++        apr_socketfd_get(&fd, csd);
++	BIO_set_num(bio, fd);
++    }
++
++    switch (cmd) {
++    case BIO_CTRL_GET_OFFLOAD_RX:
++	ret = BIO_should_offload_rx_flag(bio);
++        break;
++   case BIO_C_GET_FD:
++	ret = BIO_get_num(bio);
++        break;
++      default:
++        ret = -1;
++        break;
++    }
++
++    return ret;
++#else
+     return -1;
++#endif
+ }
+ 
+ #if MODSSL_USE_OPENSSL_PRE_1_1_API

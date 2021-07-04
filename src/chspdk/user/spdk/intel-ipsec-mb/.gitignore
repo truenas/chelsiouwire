@@ -1,0 +1,14 @@
+*.d
+*.dll
+*.lib
+*.exp
+*.obj
+*.o
+*.so*
+*.a
+*.d
+*~
+ipsec_MB_testapp*
+ipsec_perf*
+ipsec_xvalid_test*
+TAGS

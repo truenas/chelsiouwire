@@ -1,0 +1,14 @@
+diff --git a/usr/discovery.c b/usr/discovery.c
+index 6ee8bd9..c2d8af2 100644
+--- a/usr/discovery.c
++++ b/usr/discovery.c
+@@ -1105,6 +1105,9 @@ static int iscsi_create_leading_conn(struct iscsi_session *session)
+ 		 */
+ 		session->conn[0].bind_ep = 1;
+ 		session->hostno = host_no;
++	} else {
++		log_error("Could not find host num for hwaddress\n");
++		goto close_ipc;
+ 	}
+ 
+ 	rc = iscsi_host_set_net_params(iface, session);

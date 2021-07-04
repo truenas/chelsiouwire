@@ -1,0 +1,48 @@
+#!/bin/sh
+ 
+# Exit on error
+set -e
+BINPATH=/usr/local/sbin/
+
+if [ -f $BINPATH/iscsiadm1 ]
+then
+        mv $BINPATH/iscsiadm1 $BINPATH/iscsiadm
+else
+        rm -rf $BINPATH/iscsiadm
+fi
+if [ -f $BINPATH/iscsid1 ]
+then
+        mv $BINPATH/iscsid1 $BINPATH/iscsid
+else
+        rm -rf $BINPATH/iscsid
+fi
+if [ -f $BINPATH/iscsi-iname1 ]
+then
+        mv $BINPATH/iscsi-iname1 $BINPATH/iscsi-iname
+else
+        rm -rf $BINPATH/iscsi-iname
+fi
+if [ -f /etc/iscsi/iscsid.conf.1 ]
+then
+        mv /etc/iscsi/iscsid.conf.1 /etc/iscsi/iscsid.conf
+fi
+
+if [ -f $BINPATH/iscsi_discovery1 ]
+then
+	rm -f $BINPATH/iscsi_discovery
+        mv $BINPATH/iscsi_discovery1 $BINPATH/iscsi_discovery
+#else
+#	rm -f $BINPATH/iscsi_discovery
+fi
+
+file=/etc/modprobe.d/libcxgb4.conf
+string="# Disabled by Chelsio Makefile"
+lines=`grep -n "^$string" $file 2>/dev/null | sed 's/:.*//g' | sort -gr`
+for i in $lines; do
+  sed -i "$i"'d' $file
+  sed -i "$i"'s/^#//' $file
+done
+
+depmod 2>/dev/null
+
+exit 0

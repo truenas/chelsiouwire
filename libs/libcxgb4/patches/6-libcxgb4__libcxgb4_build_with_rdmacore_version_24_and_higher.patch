@@ -1,0 +1,36 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1584964912 -19800
+#      Mon Mar 23 17:31:52 2020 +0530
+# Node ID 513e58c9541d646c2bca1a06063c0a23a9b6f29b
+# Parent  0a3e422a56277b10e475e1f2b0ceca7d9868e7f7
+libcxgb4: libcxgb4 build with rdmacore version 24 and higher
+
+Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+
+diff -r 0a3e422a5627 -r 513e58c9541d rdma-core/providers/cxgb4/libcxgb4.h
+--- a/rdma-core/providers/cxgb4/libcxgb4.h	Mon Mar 23 17:29:44 2020 +0530
++++ b/rdma-core/providers/cxgb4/libcxgb4.h	Mon Mar 23 17:31:52 2020 +0530
+@@ -322,7 +322,8 @@ int c4iw_attach_mcast(struct ibv_qp *qp,
+ 			     uint16_t lid);
+ int c4iw_detach_mcast(struct ibv_qp *qp, const union ibv_gid *gid,
+ 			     uint16_t lid);
+-void c4iw_async_event(struct ibv_async_event *event);
++void c4iw_async_event(struct ibv_context *context,
++		      struct ibv_async_event *event);
+ void c4iw_flush_hw_cq(struct c4iw_cq *chp);
+ int c4iw_flush_rq(struct t4_wq *wq, struct t4_cq *cq, int count);
+ void c4iw_flush_sq(struct c4iw_qp *qhp);
+diff -r 0a3e422a5627 -r 513e58c9541d rdma-core/providers/cxgb4/verbs.c
+--- a/rdma-core/providers/cxgb4/verbs.c	Mon Mar 23 17:29:44 2020 +0530
++++ b/rdma-core/providers/cxgb4/verbs.c	Mon Mar 23 17:31:52 2020 +0530
+@@ -1402,7 +1402,8 @@ int c4iw_detach_mcast(struct ibv_qp *ibq
+ 	return ret;
+ }
+ 
+-void c4iw_async_event(struct ibv_async_event *event)
++void c4iw_async_event(struct ibv_context *context,
++		      struct ibv_async_event *event)
+ {
+ 	PDBG("%s type %d obj %p\n", __func__, event->event_type,
+ 	event->element.cq);

@@ -1,0 +1,69 @@
+
+EXAMPLE 
+
+
+
+[root@heptagon openssl-1.0.2d]# pwd
+/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d
+
+[root@heptagon openssl-1.0.2d]# mkdir install
+[root@heptagon openssl-1.0.2d]# mkdir install/openssl
+
+[root@heptagon openssl-1.0.2d]# ./config --prefix=/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/install --openssldir=/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/install/openssl  shared threads
+
+make
+
+make install
+
+[root@heptagon af_alg]# pwd
+/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/engines/af_alg
+
+Change the Makefile. Read the comments in it to know what to change.
+
+make
+
+Copy libaf_alg.so to /root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/install/lib/engines
+
+[root@heptagon bin]# pwd
+/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/install/bin
+
+[root@heptagon bin]# ls
+1K  c_rehash  openssl
+
+[root@heptagon bin]# ./openssl dgst -engine af_alg -sha1 1K
+engine "af_alg" set.
+SHA1(1K)= fa65e4c5ad0e5f7a94337910847bd10f7af10c74
+
+
+[root@heptagon bin]# ./openssl dgst -sha1 1K
+SHA1(1K)= fa65e4c5ad0e5f7a94337910847bd10f7af10c74
+
+
+
+
+[root@heptagon openssl]# pwd
+/root/jlulla/sec_231/dev/T6/linux/tls/openssl-1.0.2d/install/openssl
+change the openssl.cnf file like below:
+
+# This definition stops the following lines choking if HOME isn't
+# defined.
+HOME                    = .
+RANDFILE                = $ENV::HOME/.rnd
+
+# Extra OBJECT IDENTIFIER info:
+#oid_file               = $ENV::HOME/.oid
+oid_section             = new_oids
+
+openssl_conf = openssl_def
+
+[openssl_def]
+engines = openssl_engines
+
+[openssl_engines]
+af_alg = af_alg_engine
+
+[af_alg_engine]
+default_algorithms = ALL
+CIPHERS=aes-128-cbc aes-192-cbc aes-256-cbc aes-128-ctr aes-192-ctr aes-256-ctr
+DIGESTS=md4 md5 sha1 sha224 sha256 sha384 sha512
+

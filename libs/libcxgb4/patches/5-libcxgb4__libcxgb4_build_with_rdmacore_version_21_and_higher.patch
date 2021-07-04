@@ -1,0 +1,29 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1560938121 -19800
+#      Wed Jun 19 15:25:21 2019 +0530
+# Node ID 8ecee5a909d2ac2e2df685e072b512db5046df99
+# Parent  a365b1219b9e1f2dacde283de5b5cb1d49670ccf
+libcxgb4: libcxgb4 build with rdmacore version 21 and higher
+
+diff -r a365b1219b9e -r 8ecee5a909d2 rdma-core/providers/cxgb4/dev.c
+--- a/rdma-core/providers/cxgb4/dev.c	Wed Jun 19 15:17:20 2019 +0530
++++ b/rdma-core/providers/cxgb4/dev.c	Wed Jun 19 15:25:21 2019 +0530
+@@ -114,7 +114,7 @@ static const struct verbs_context_ops c4
+ };
+ 
+ static struct verbs_context *c4iw_alloc_context(struct ibv_device *ibdev,
+-					      int cmd_fd)
++					      int cmd_fd, void *private_data)
+ {
+ 	struct c4iw_context *context;
+ 	struct ibv_get_context cmd;
+@@ -504,7 +504,7 @@ static const struct verbs_device_ops c4i
+ 	.alloc_context = c4iw_alloc_context,
+ 	.free_context = c4iw_free_context,
+ };
+-PROVIDER_DRIVER(c4iw_dev_ops);
++PROVIDER_DRIVER(cxgb4, c4iw_dev_ops);
+ 
+ #ifdef STATS
+ void __attribute__ ((destructor)) cs_fini(void);

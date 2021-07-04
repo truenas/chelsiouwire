@@ -1,0 +1,357 @@
+# Chelsio T5 HIGH CAPACITY VF configuration file.
+#
+# Copyright (C) 2010-2017 Chelsio Communications.  All rights reserved.
+#
+#   DO NOT MODIFY THIS FILE UNDER ANY CIRCUMSTANCES.  MODIFICATION OF THIS FILE
+#   WILL RESULT IN A NON-FUNCTIONAL ADAPTER AND MAY RESULT IN PHYSICAL DAMAGE
+#   TO ADAPTERS.
+
+
+# This file provides the default, power-on configuration for 4-port T5-based
+# adapters shipped from the factory.  These defaults are designed to address
+# the needs of the vast majority of Terminator customers.  The basic idea is to
+# have a default configuration which allows a customer to plug a Terminator
+# adapter in and have it work regardless of OS, driver or application except in
+# the most unusual and/or demanding customer applications.
+#
+# Many of the Terminator resources which are described by this configuration
+# are finite.  This requires balancing the configuration/operation needs of
+# device drivers across OSes and a large number of customer application.
+#
+# Some of the more important resources to allocate and their constaints are:
+#  1. Virtual Interfaces: 128.
+#  2. Ingress Queues with Free Lists: 1024.
+#  3. Egress Queues: 128K.
+#  4. MSI-X Vectors: 1088.
+#  5. Multi-Port Support (MPS) TCAM: 512 entries to support MAC destination
+#     address matching on Ingress Packets.
+#
+
+
+# Global configuration settings.
+#
+[global]
+	rss_glb_config_mode = basicvirtual
+	rss_glb_config_options = tnlmapen,hashtoeplitz,tnlalllkp
+
+	# PL_TIMEOUT register
+	pl_timeout_value = 10000	# the timeout value in units of us
+
+	# The following Scatter Gather Engine (SGE) settings assume a 4KB Host
+	# Page Size and a 64B L1 Cache Line Size. It programs the
+	# EgrStatusPageSize and IngPadBoundary to 64B and the PktShift to 2.
+	# If a Master PF Driver finds itself on a machine with different
+	# parameters, then the Master PF Driver is responsible for initializing
+	# these parameters to appropriate values.
+	#
+	# Notes:
+	#  1. The Free List Buffer Sizes below are raw and the firmware will
+	#     round them up to the Ingress Padding Boundary.
+	#  2. The SGE Timer Values below are expressed below in microseconds.
+	#     The firmware will convert these values to Core Clock Ticks when
+	#     it processes the configuration parameters.
+	#
+	reg[0x1008] = 0x40810/0x21c70	# SGE_CONTROL
+	reg[0x100c] = 0x22222222	# SGE_HOST_PAGE_SIZE
+	reg[0x10a0] = 0x01040810	# SGE_INGRESS_RX_THRESHOLD
+	reg[0x1044] = 4096		# SGE_FL_BUFFER_SIZE0
+	reg[0x1048] = 65536		# SGE_FL_BUFFER_SIZE1
+	reg[0x104c] = 1536		# SGE_FL_BUFFER_SIZE2
+	reg[0x1050] = 9024		# SGE_FL_BUFFER_SIZE3
+	reg[0x1054] = 9216		# SGE_FL_BUFFER_SIZE4
+	reg[0x1058] = 2048		# SGE_FL_BUFFER_SIZE5
+	reg[0x105c] = 128		# SGE_FL_BUFFER_SIZE6
+	reg[0x1060] = 8192		# SGE_FL_BUFFER_SIZE7
+	reg[0x1064] = 16384		# SGE_FL_BUFFER_SIZE8
+	reg[0x10a4] = 0x00280000/0x3ffc0000 # SGE_DBFIFO_STATUS
+	reg[0x1118] = 0x00002800/0x00003c00 # SGE_DBFIFO_STATUS2
+	reg[0x10a8] = 0x402000/0x402000	# SGE_DOORBELL_CONTROL
+
+	# SGE_THROTTLE_CONTROL
+	bar2throttlecount = 500		# bar2throttlecount in us
+
+	sge_timer_value = 5, 10, 20, 50, 100, 200 # SGE_TIMER_VALUE* in usecs
+
+	
+	reg[0x1124] = 0x00000400/0x00000400 # SGE_CONTROL2, enable VFIFO; if
+					# SGE_VFIFO_SIZE is not set, then
+					# firmware will set it up in function
+					# of number of egress queues used
+
+	reg[0x1130] = 0x00d5ffeb	# SGE_DBP_FETCH_THRESHOLD, fetch
+					# threshold set to queue depth
+					# minus 128-entries for FL and HP
+					# queues, and 0xfff for LP which
+					# prompts the firmware to set it up
+					# in function of egress queues
+					# used
+
+	reg[0x113c] = 0x0002ffc0	# SGE_VFIFO_SIZE, set to 0x2ffc0 which
+					# prompts the firmware to set it up in
+					# function of number of egress queues
+					# used 
+
+	# enable TP_OUT_CONFIG.IPIDSPLITMODE
+	reg[0x7d04] = 0x00010000/0x00010000
+
+	# disable TP_PARA_REG3.RxFragEn
+	reg[0x7d6c] = 0x00000000/0x00007000
+
+	# enable TP_PARA_REG6.EnableCSnd
+	reg[0x7d78] = 0x00000400/0x00000000
+
+	reg[0x7dc0] = 0x0e2f8849	# TP_SHIFT_CNT
+
+	# TP_VLAN_PRI_MAP to select filter tuples and enable ServerSram
+	# filter control: compact, fcoemask
+	# server sram   : srvrsram
+	# filter tuples : fragmentation, mpshittype, macmatch, ethertype,
+	#		  protocol, tos, vlan, vnic_id, port, fcoe
+	# valid filterModes are described the Terminator 5 Data Book
+	filterMode = fcoemask, srvrsram, fragmentation, mpshittype, protocol, vlan, port, fcoe
+
+	# filter tuples enforced in LE active region (equal to or subset of filterMode)
+	filterMask = protocol, fcoe
+
+	# Percentage of dynamic memory (in either the EDRAM or external MEM)
+	# to use for TP RX payload
+	tp_pmrx = 0
+
+	# TP RX payload page size
+	tp_pmrx_pagesize = 64K
+
+	# TP number of RX channels
+	tp_nrxch = 0		# 0 (auto) = 1
+
+	# Percentage of dynamic memory (in either the EDRAM or external MEM)
+	# to use for TP TX payload
+	tp_pmtx = 0
+
+	# TP TX payload page size
+	tp_pmtx_pagesize = 64K
+
+	# TP number of TX channels
+	tp_ntxch = 0		# 0 (auto) = equal number of ports
+
+	# TP OFLD MTUs
+	tp_mtus = 88, 256, 512, 576, 808, 1024, 1280, 1488, 1500, 2002, 2048, 4096, 4352, 8192, 9000, 9600
+
+	# TP_GLOBAL_CONFIG
+	reg[0x7d08] = 0x00000800/0x00000800 # set IssFromCplEnable
+
+	# TP_PC_CONFIG
+	reg[0x7d48] = 0x00000000/0x00000400 # clear EnableFLMError
+
+	# TP_PARA_REG0
+	reg[0x7d60] = 0x06000000/0x07000000 # set InitCWND to 6
+
+	# ULPRX iSCSI Page Sizes
+	reg[0x19168] = 0x04020100 # 64K, 16K, 8K and 4K
+
+	# LE_DB_CONFIG
+	reg[0x19c04] = 0x00400000/0x00400000 # LE Server SRAM Enable
+
+	# MC configuration
+	mc_mode_brc[0] = 1		# mc0 - 1: enable BRC, 0: enable RBC
+	mc_mode_brc[1] = 1		# mc1 - 1: enable BRC, 0: enable RBC
+
+	# ULP_TX_CONFIG
+	reg[0x8dc0] = 0x00000004/0x00000004 # Enable more error msg for ...
+					    # TPT error.
+
+# Some "definitions" to make the rest of this a bit more readable.  We support
+# 4 ports, 3 functions (NIC, FCoE and iSCSI), scaling up to 8 "CPU Queue Sets"
+# per function per port ...
+#
+# NMSIX = 1088			# available MSI-X Vectors
+# NVI = 128			# available Virtual Interfaces
+# NMPSTCAM = 512		# MPS TCAM entries
+#
+# NPORTS = 4			# ports
+# NCPUS = 8			# CPUs we want to support scalably
+# NFUNCS = 1			# functions per port (NIC)
+
+# Breakdown of Virtual Interface/Queue/Interrupt resources for the "Unified
+# PF" which many OS Drivers will use to manage most or all functions.
+#
+# Each Ingress Queue can use one MSI-X interrupt but some Ingress Queues can
+# use Forwarded Interrupt Ingress Queues.  For these latter, an Ingress Queue
+# would be created and the Queue ID of a Forwarded Interrupt Ingress Queue
+# will be specified as the "Ingress Queue Asynchronous Destination Index."
+# Thus, the number of MSI-X Vectors assigned to the Unified PF will be less
+# than or equal to the number of Ingress Queues ...
+#
+# NVI_NIC = 4			# NIC access to NPORTS
+# NFLIQ_NIC = 32		# NIC Ingress Queues with Free Lists
+# NETHCTRL_NIC = 32		# NIC Ethernet Control/TX Queues
+# NEQ_NIC = 64			# NIC Egress Queues (FL, ETHCTRL/TX)
+# NMPSTCAM_NIC = 16		# NIC MPS TCAM Entries (NPORTS*4)
+# NMSIX_NIC = 32		# NIC MSI-X Interrupt Vectors (FLIQ)
+#
+
+# All of the below PCI-E parameters are actually stored in various *_init.txt
+# files.  We include them below essentially as comments.
+#
+# For PF4, we give it an MSI-X Table Size as outlined above.
+#
+# NVF = 124
+
+# For PF0-3 only mailbox commands are allowed and no
+# resources are allocated.
+
+[function "0"]
+	wx_caps = 0x1		# PF
+	r_caps = 0x81		# VF | PF
+	pmask = 0x1		# access to only one port
+[function "1"]
+	wx_caps = 0x1		# PF
+	r_caps = 0x81		# VF | PF
+	pmask = 0x2		# access to only one port
+[function "2"]
+	wx_caps = 0x1		# PF
+	r_caps = 0x81		# VF | PF
+	pmask = 0x4		# access to only one port
+[function "3"]
+	wx_caps = 0x1		# PF
+	r_caps = 0x81		# VF | PF
+	pmask = 0x8		# access to only one port
+
+# Some OS Drivers manage all application functions for all ports via PF4.
+# Thus we need to provide a large number of resources here.  For Egress
+# Queues we need to account for both TX Queues as well as Free List Queues
+# (because the host is responsible for producing Free List Buffers for the
+# hardware to consume).
+#
+[function "4"]
+	wx_caps = all		# write/execute permissions for all commands
+	r_caps = all		# read permissions for all commands
+	nvi = 4			# NVI_UNIFIED
+	niqflint = 320		# NFLIQ_UNIFIED + NLFIQ_WD
+	nethctrl = 320		# NETHCTRL_UNIFIED + NETHCTRL_WD
+	neq = 640		# NEQ_UNIFIED + NEQ_WD
+	nexactf = 16 		# NMPSTCAM_UNIFIED
+	cmask = all		# access to all channels
+	pmask = all		# access to all four ports ...
+	protocol = nic_vm
+
+
+# The following function, 1023, is not an actual PCIE function but is used to
+# configure and reserve firmware internal resources that come from the global
+# resource pool.
+#
+[function "1023"]
+	wx_caps = all		# write/execute permissions for all commands
+	r_caps = all		# read permissions for all commands
+	cmask = all		# access to all channels
+	pmask = all		# access to all four ports ...
+
+
+# For Virtual functions, we only allow NIC functionality and we only allow
+# access to one port (1 << PF).  Note that because of limitations in the
+# Scatter Gather Engine (SGE) hardware which checks writes to VF KDOORBELL
+# and GTS registers, the number of Ingress and Egress Queues must be a power
+# of 2.
+#
+[function "0/*"]		# NVF
+	wx_caps = 0x82		# DMAQ | VF
+	r_caps = 0x86		# DMAQ | VF | PORT
+	nvi = 1			# 1 port
+	niqflint = 4		# 3 "Queue Sets" + NXIQ
+	nethctrl = 4		# 3 "Queue Sets"
+	neq = 6			# 3 "Queue Sets" * 2
+	nexactf = 4
+	cmask = all		# access to all channels
+	pmask = 0x1		# access to only one port ...
+
+
+[function "1/*"]		# NVF
+	wx_caps = 0x82		# DMAQ | VF
+	r_caps = 0x86		# DMAQ | VF | PORT
+	nvi = 1			# 1 port
+	niqflint = 4		# 3 "Queue Sets" + NXIQ
+	nethctrl = 4		# 3 "Queue Sets"
+	neq = 6			# 3 "Queue Sets" * 2
+	nexactf = 4
+	cmask = all		# access to all channels
+	pmask = 0x2		# access to only one port ...
+
+
+[function "2/*"]		# NVF
+	wx_caps = 0x82		# DMAQ | VF
+	r_caps = 0x86		# DMAQ | VF | PORT
+	nvi = 1			# 1 port
+	niqflint = 4		# 3 "Queue Sets" + NXIQ
+	nethctrl = 4		# 3 "Queue Sets"
+	neq = 6			# 3 "Queue Sets" * 2
+	nexactf = 4
+	cmask = all		# access to all channels
+	pmask = 0x4		# access to only one port ...
+
+
+[function "3/*"]		# NVF
+	wx_caps = 0x82		# DMAQ | VF
+	r_caps = 0x86		# DMAQ | VF | PORT
+	nvi = 1			# 1 port
+	niqflint = 4		# 3 "Queue Sets" + NXIQ
+	nethctrl = 4		# 3 "Queue Sets"
+	neq = 6			# 3 "Queue Sets" * 2
+	nexactf = 4
+	cmask = all		# access to all channels
+	pmask = 0x8		# access to only one port ...
+
+# MPS features a 196608 bytes ingress buffer that is used for ingress buffering
+# for packets from the wire as well as the loopback path of the L2 switch. The
+# folling params control how the buffer memory is distributed and the L2 flow
+# control settings:
+#
+# bg_mem:	%-age of mem to use for port/buffer group
+# lpbk_mem:	%-age of port/bg mem to use for loopback
+# hwm:		high watermark; bytes available when starting to send pause
+#		frames (in units of 0.1 MTU)
+# lwm:		low watermark; bytes remaining when sending 'unpause' frame
+#		(in inuits of 0.1 MTU)
+# dwm:		minimum delta between high and low watermark (in units of 100
+#		Bytes)
+#
+[port "0"]
+	bg_mem = 25
+	lpbk_mem = 25
+	hwm = 30
+	lwm = 15
+	dwm = 30
+
+
+[port "1"]
+	bg_mem = 25
+	lpbk_mem = 25
+	hwm = 30
+	lwm = 15
+	dwm = 30
+
+
+[port "2"]
+	bg_mem = 25
+	lpbk_mem = 25
+	hwm = 30
+	lwm = 15
+	dwm = 30
+
+
+[port "3"]
+	bg_mem = 25
+	lpbk_mem = 25
+	hwm = 30
+	lwm = 15
+	dwm = 30
+
+[fini]
+	version = 0x12000035
+	checksum = 0x7767fbfa
+
+# Total resources used by above allocations:
+#   Virtual Interfaces: 104
+#   Ingress Queues/w Free Lists and Interrupts: 526
+#   Egress Queues: 702
+#   MPS TCAM Entries: 336
+#   MSI-X Vectors: 736
+#   Virtual Functions: 64

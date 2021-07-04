@@ -1,0 +1,14 @@
+2.6.32-754.el6.x86_64 RHEL 6.10
+3.10.0-1127.el7.x86_64 RHEL 7.8
+3.10.0-1160.el7.x86_64 RHEL 7.9
+4.18.0-193.el8.x86_64 RHEL 8.2
+4.18.0-240.el8.x86_64 RHEL 8.3
+4.19 Kernel.org linux-4.19
+5.4 Kernel.org linux-5.4
+5.10 Kernel.org linux-5.10
+4.15.0-126-generic UBUNTU 18.04.5 LTS
+5.4.0-65-generic UBUNTU 20.04.2 LTS
+3.10.0-862.el7.ppc64le RHEL 7.5 (POWER8)
+3.10.0-957.el7.ppc64le RHEL 7.6 (POWER8)
+4.14.0-49.el7a.aarch64 RHEL 7.5 (ARM64)
+4.14.0-115.el7a.aarch64 RHEL 7.6 (ARM64)

@@ -1,0 +1,382 @@
+.\" -*- nroff -*-
+.\" Copyright (c) 2004-2021 by Chelsio Communications.  All Rights Reserved.
+.TH CXGBTOOL-STOR "8" "May 2004-2021" "cxgbtool stor 1.17" "Linux"
+.SH "NAME"
+cxgbtool stor \- display or change Chelsio network card settings for storage functions
+.SH "SYNOPSIS"
+.B cxgbtool stor
+\fI\-\-sub-command\fR \fBparam\fR \fBvalue\fR ...
+
+.B cxgbtool stor 
+\fI\-\-sub-command\fR \-h | \-\-help
+
+.B cxgbtool \-v | \-\-version
+.SH "DESCRIPTION"
+.BI "cxgbtool stor"
+configures or queries various aspects of storage functions in Chelsio network 
+interface cards. It is an extension to 
+.BI cxgbtool.
+
+.I sub-command
+is the storage function sub-system which needs to be configured or queried.
+
+.SH "OPTIONS"
+.TP
+\fB\-\-sub-command \-h\fR, \fB\-\-help\fR
+show usage information
+.PP
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+show version information
+.PP
+.B "cxgbtool stor"
+supports the following sub-commands:
+.TP
+\fB--chnet\fR \fIparam\fR \fIvalue\fR ...
+Queries or configures the CHNET sub-system. This sub-system is used for
+configuring the specified network interface.
+
+The following parameters and values are supported.
+.RS
+.TP
+\fB\-\-mode\fR
+.br
+Acceptable values are,
+.br
+\fBiface\fR, used to configure LINK UP/DOWN, VLAN and MTU per interface
+.br
+\fBifconf\fR, used to configure IPV4/IPV6 address to the network interface
+
+.TP
+\fB\-\-device\fR
+.br
+The network card, which is configured. For eg: /dev/csiostor0
+
+.TP
+\fB\-\-op\fR
+The operation to be performed. Acceptable values are,
+.br
+\fBup\fR, bring up the LINK on the specified interface
+.br
+\fBdown\fR, bring down the LINK on the specified interface
+.br
+\fBvlan\fR, configure the specified VLAN on the specified interface
+.br
+\fBmtu\fR - configure the specified MTU on the specified interface
+.br
+\fBassign\fR, configure the specified IP on the specified interface
+.br
+\fBclear\fR, clear the configured IP on the specified interface
+.br
+\fBshow\fR, display the configuration of the specified interface
+.br
+\fBping\fR, ping specified IP using the specified interface
+
+.TP
+\fB\-\-vlan\fR
+.br
+The vlan to be configured on the specified interface. Acceptable values are 2-4094. Used with both \fBiface\fR and \fBifconf\fR mode.
+
+.TP
+\fB\-\-vlanprio\fR
+.br
+The vlan priority to be configured on the specified interface. Acceptable values are 0-7. Used with both \fBiface\fR and \fBifconf\fR mode.
+
+.TP
+\fB\-\-mtu\fR
+.br
+The mtu to be configured on the specified interface. Acceptable values are 1500-9000. Used only with \fBiface\fR mode.
+
+.TP
+\fB\-\-ifid\fR
+.br
+The interface, which is configured. Acceptable values are 0-3. Used with both \fBiface\fR and \fBifconf\fR mode.
+
+.TP
+\fB\-\-type\fR
+.br
+The type of the configured IP address. Acceptible values are IPV4, IPV6, DHCP and DHCPV6. Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-saddr\fR
+.br
+The IPV4 address assigned to the specified interface.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-mask\fR
+.br
+The IPV4 subnet mask configured on the specified interface.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-prefix\fR
+.br
+The IPV6 address prefix configured on the specified interface.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-gw\fR
+.br
+The IPV4 (or) IPV6 gateway configured on the specified interface for routing.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-addr\fR
+.br
+The IPV4 (or) IPV6 address to ping using the specified interface.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-pingtimeout\fR
+.br
+Specifies the timeout for the ICMP ping command to fail. Default is 10 seconds.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-pingcnt\fR
+.br
+Specifies the number of ICMP ping messages to be sent. Default is 3.  Used only with \fBifconf\fR mode.
+
+.TP
+\fB\-\-loopback\fR
+.br
+Enables loopback mode on the specified interface.
+
+.RE
+.TP
+\fB--foiscsi\fR \fIparam\fR \fIvalue\fR ...
+Queries or Configures the FOiSCSI sub-system. This sub-system is used for
+configuring FOiSCSI initiator instance, discover, login to and logout from iSCSI target.
+
+The following parameters and values are supported.
+.RS
+.TP
+\fB\-\-mode\fR
+.br
+Acceptable values are,
+.br
+\fBinit-instance\fR, initializes the FOiSCSI initiator instance with the specified parameters
+.br
+\fBdiscovery\fR, discovers the iSCSI targets(if any) listening on the specified portal
+.br
+\fBsession\fR, login to/logout from the specified iSCSI target (or) display iSCSI sessions details
+.br
+\fBpersistent\fR, display (or) clear the stored persistent login information
+.br
+\fBhw\fR, display hardware configuration details
+
+.TP
+\fB\-\-device\fR
+.br
+The network card, which is configured. For eg: /dev/csiostor0
+
+.TP
+\fB\-\-op\fR
+The operation to be performed. Acceptable values are, 
+.br
+\fBassign\fR, creates a new FOiSCSI initiator instance with the specified parameters
+.br
+\fBclear\fR, clears the specified FOiSCSI initiator instance
+.br
+\fBshow\fR, display the specified FOiSCSI initiator instance details, iSCSI session details,
+persistent login details (or) hardware configuration details
+.br
+\fBlogin\fR, login to the specified iSCSI target
+.br
+\fBlogout\f, logout from the specified (or) ALL existing iSCSI sessions
+
+.TP
+\fB\-\-nodeid\fR
+.br
+The FOiSCSI initiator instance ID to be assigned.
+
+.TP
+\fB\-\-name\fR
+.br
+The FOiSCSI initiator instance name to be assigned.
+
+.TP
+\fB\-\-alias\fR
+.br
+The alias name for the FOiSCSI initiator instance to be created.
+
+.TP
+\fB\-\-saddr\fR
+.br
+The iSCSI portal IP address on which the iSCSI targets are to be discovered or logged in.
+
+.TP
+\fB\-\-portal\fR
+.br
+The iSCSI portal port on which the iSCSI targets are to be discovered or logged in.
+
+.TP
+\fB\-\-target\fR
+.br
+The target iSCSI name to which the FOiSCSI initiator attempts to login.
+
+.TP
+\fB\-\-auth_method\fR
+.br
+The authentication method to be used during the iSCSI login process. Acceptable values are CHAP and None.
+
+.TP
+\fB\-\-policy\fR
+.br
+The authentication policy to be used during the iSCSI login process. Acceptable values are Oneway and Mutual.
+
+.TP
+\fB\-\-ini_user\fR
+.br
+The Initiator CHAP username to be used during iSCSI login authentication.
+
+.TP
+\fB\-\-ini_sec\fR
+.br
+The Initiator CHAP secret to be used during iSCSI login authentication.
+
+.TP
+\fB\-\-tgt_user\fR
+.br
+The Target CHAP username to be used for iSCSI login authentication.
+
+.TP
+\fB\-\-tgt_sec\fR
+.br
+The Target CHAP secret to be used for the iSCSI login authentication.
+
+.TP
+\fB\-\-persistent\fR
+.br
+Specifies to store the iSCSI session as persistent login information.
+
+.TP
+\fB\-\-tcp_wsen\fR
+.br
+Specifies to enable TCP window scale in 3-way connection establishment handshake.
+
+.TP
+\fB\-\-tcp_wscale\fR
+.br
+The TCP window scale value to be used by the 3-way connection establishment handshake.
+Acceptable values are 0-12.
+
+.TP
+\fB\-\-sid\fR
+.br
+iSCSI session ID to logout or display.
+
+.TP
+\fB\-\-idx\fR
+.br
+Specifies the index of the persistent login information to clear.
+
+.RE
+.TP
+\fB--coiscsi\fR \fIparam\fR \fIvalue\fR ...
+Queries or Configures the COiSCSI sub-system. This sub-system is used for configuring COiSCSI target.
+
+The following parameters and values are supported.
+.RS
+.TP
+\fB\-\-mode\fR
+.br
+Acceptable values are,
+.br
+\fBtarget\fR, configures the COiSCSI target with specified parameters
+.br
+\fBhw\fR, display hardware configuration details
+
+.TP
+\fB\-\-device\fR
+.br
+The network card, which is configured. For eg: /dev/csiostor0
+
+.TP
+\fB\-\-op\fR
+The operation to be performed. Acceptable values are, 
+.br
+\fBassign\fR, starts ALL COiSCSI targets in the config file (or) the specified target
+.br
+\fBupdate\fR, updates ALL COiSCSI targets in the config file (or) the specified target
+.br
+\fBclear\fR, stops ALL COiSCSI targets in the config file (or) the specified target
+.br
+\fBshow\fR, display ALL COiSCSI target details (or) the specified target (or) the hardware configuration details
+.br
+\fBstats\fR, displays the statistics of ALL COiSCSI targets (or) the specified target
+.br
+\fBstatsclr\fR, Clears the statistics of ALL COiSCSI targets (or) the specified target
+
+.TP
+\fB\-\-name\fR
+.br
+The COiSCSI target to be started or stopped.
+
+.TP
+\fB\-\-tcp_wsen\fR
+.br
+Specifies to enable TCP window scale in 3-way connection establishment handshake.
+
+.TP
+\fB\-\-tcp_wscale\fR
+.br
+The TCP window scale value to be used by the 3-way connection establishment handshake.
+Acceptable values are 0-12.
+
+.RE
+.TP
+\fB--iSNS\fR \fIparam\fR \fIvalue\fR ...
+Queries or Configures the iSNS client or listening server in the COiSCSI sub-system.
+
+The following parameters and values are supported.
+.RS
+.TP
+\fB\-\-mode\fR
+.br
+Acceptable values are,
+.br
+\fBclient\fR, configures the iSNS client with the specified parameters
+.br
+\fBserver\fR, configures the iSNS listening server with the specified parameters
+
+.TP
+\fB\-\-device\fR
+.br
+The network card, which is configured. For eg: /dev/csiostor0
+
+.TP
+\fB\-\-op\fR
+The operation to be performed. Acceptable values are, 
+.br
+\fBassign\fR, starts the iSNS client (or) listening server
+.br
+\fBclear\fR, stops the iSNS client (or) listening server
+.br
+\fBshow\fR, display the iSNS client (or) listening server details
+
+.TP
+\fB\-\-addr\fR
+.br
+The IPV4 or IPV6 address on which the iSNS client or listening server needs to be configured.
+
+.TP
+\fB\-\-port\fR
+.br
+The port on which the iSNS client or listening server needs to be configured.
+
+.TP
+\fB\-\-type\fR
+.br
+Specifies the type of IP address specified for iSNS client or listening server.
+
+.TP
+\fB\-\-ifid\fR
+.br
+Specifies the interface on which the iSNS client or listening server needs to be configured.
+
+.SH BUGS
+None known.
+.SH "SEE ALSO"
+ifconfig(8), ip(8), ethtool(8), mii-tool(8), cop(8), bootcfg(8), cxgbtool(8)
+.SH "AUTHOR"
+.B cxgbtool stor
+was written by Dimitris Michailidis.
+.SH "AVAILABILITY"
+.B cxgbtool stor
+is available from Chelsio Communications.

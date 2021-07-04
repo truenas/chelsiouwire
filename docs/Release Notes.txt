@@ -1,0 +1,777 @@
+                    ****************************************
+                                RELEASE NOTES
+
+                    ****************************************
+
+                        Chelsio Unified Wire for Linux 
+          
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CHANGES 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Driver
+======
+
+Version : 3.14.0.3
+Date    : 05/21/2021
+================================================================================
+
+- Updated Firmware to 1.25.6.0
+
+Network (NIC/TOE):
+- Fixed the issue cxgbtool clearstats is clearing tp_tnl_cong_drops of all ports.
+- Fixed the issue of TOE connections getting stuck in FIN_WAIT1 or LAST_ACK 
+  state with repeated toggling of interface.
+- Fixed the buggy messages observed in dmesg while copying debugfs entries in 
+  5.10 kernel.
+- Fixed out-of-bound memory access by avoiding registers read while clearing the 
+  filters.
+- Changed the default congestion algorithm for TOE to newreno.
+- Added a new sysctl to control TOE nagle (disabled by default).
+
+iWARP RDMA Offload:
+- Fixed the issue observed while destroying ipv6 listening server.
+
+Offload Bonding:
+- Fixed the issues observed with repeated toggling of interface in mode=0 bond.
+- Fixed the issue unable to establish connections to PEER without ping over 
+  mode=2 bond.
+
+SPDK NVMe-oF TOE: 
+- Added module parameters for tuning TCP window size (default 128 KB).
+- Fixed the mbuf corruption while connecting to more than 40 target devices.
+
+
+================================================================================
+================================================================================
+
+
+Version : 3.14.0.2 (Beta)
+Date    : 03/31/2021
+================================================================================
+
+- Updated Firmware to 1.25.4.0
+- Added support for RHEL7.9, 8.3, Ubuntu 20.04.2, 18.04.5 Distributions and 5.10 
+  Kernel.
+- Updated copyright year to 2021.
+
+Network (NIC/TOE):
+- Fixed the issues observed on unloading t4_tom and toecore.
+- Fixed the issue observed on loading cxgb4, after running chdebug.
+- Fixed the kernel panic observed while mounting filesystem over NFS in latest 
+  platforms.
+- Fixed the issue observed with offload traffic on SO card.
+- Fixed the issues observed on removing PF4 with offload traffic.
+- Fixed the error path during offload listen.
+- Fixed the issue observed during continuous logs collection with scst iser 
+  traffic.
+- Added support to set congestion algorithm.
+- Added support to set TP congestion mode for the specified queues.
+- Added TP tunnel congestion drops to ifconfig and ethtool stats. 
+- Added support to read the applied cop policies.
+- Added Device IDs of custom T6 board.
+- Included ethtool -m to chdebug script. 
+
+iWARP RDMA Offload:
+- Fixed the segmentation fault observed while running iWARP traffic on latest 
+  kernels.
+- Fixed the spurious CQE errors observed with traffic on RHEL8.X OS.
+- Fixed the trace observed on NVMe initiator while discovering SPDK 
+  NVMe/iWARP target. 
+
+Crypto Offload:
+- [Co-processor]: Fixed the panic on removing PF4 with 1 IPalias over ipxfrm 
+  tunnel. 
+- [Co-processor]: Fixed the issues observed with ipsec tunnels in RHEL7.8.
+- [Inline TLS]: Fixed the issue, connections fail to establish without DDP.
+
+FCoE full offload Initiator:
+- Added the csiostor module soft dependency on cxgb4.
+
+Offload Bonding:
+- Fixed the issue, all connections are not offloaded on bringing one interface 
+  down and then starting connections in load balance bonding modes. 
+- Fixed the panic on unloading bonding driver with connection in SYN_SENT state.
+- Fixed the error messages seen after detaching both bond interfaces in mode 4.
+- Fixed the devlog errors on toggling the bonded interface.
+- Fixed unload path for bonding modes 0 & 4 while traffic is in progress.
+
+UDP Segmentation Offload and Pacing:
+- Fixed the issues with IPv6 UDP-SO traffic.
+- Fixed the panic observed with large number of UDP Offload connections. 
+- Added support to fallback to kernel stack if the uotids are used up.
+
+Classification and Filtering:
+- Fixed the junk data seen for Hit bytes when creating hash filters using 
+  default config file.
+- Fixed the issue, mirror queues are seen in /proc/interrupts when cxgb4 is 
+  loaded with just "use_ddr_filters=1"
+
+Traffic Management:
+- Removed printing rate-mode in "sched-class show" command.
+
+SPDK NVMe-oF TOE: 
+- Updated SPDK version to 20.10.
+
+Option ROM:
+- Signed Option ROM v2.0.0.41
+- Fixed the uEFI IPv6 iSCSI PingTest and Target Discovery issues.
+- Fixed the PingTest failure if link is not present at boot-up and is connected
+  after it is in BIOS.
+- Fixed the uEFI IPV6 Lun Discovery issue at bootup.
+- Fixed the issues observed in Dell PowerEdge R720 HII.
+- Fixed F8 to default only the specific port.
+- Fixed hang on driver unload during update in few machines.
+- Enabled Target IP Ping.
+- Fixed the issues with IPv6 Target ping and discovery.
+- Fixed the issue PXE option rom is in disabled state intermittently while 
+  machine is booting.
+- Fixed the issue "Link is Down" seen while trying to discover iSCSI target with 
+  2nd adapter.
+- Disabled co-existence of Chelsio Unified and PXE Only driver.
+- Disabled PF5 and 6 initialization for SO cards.
+- Added additional debug information to Debug builds.
+- Added support to send small packets as ImmediateData for Tx. 
+
+
+Firmware
+========
+
+Version : 1.25.6.0
+Date    : 05/21/2021
+================================================================================
+
+Fixes
+-----
+
+BASE:
+- Fixed backward compatibility issue in port type interpretation with vpd 
+  version 0x80.
+
+
+Enhancements
+------------
+
+ETH:
+- Rate limiting support added for encapsulated (vxlan, nvgre, geneve) NIC TCP 
+  packets.
+
+OFLD:
+- More than 128 SGLs supported in FW_RI_FR_NSMR_WR. Now, more than 16GB
+  (upto 64GB) of PBLs can be written with single FW_RI_FR_NSMR_WR.
+
+
+================================================================================
+================================================================================
+
+
+Version : 1.25.4.0
+Date    : 03/31/2021
+================================================================================
+
+Fixes
+-----
+
+BASE:
+- Fixed Back to back T6 100G-CR4 link coming up with NO FEC sometimes.
+- Try to bring up link in 1G speed if link doesn't come up on 10G.
+- Fixed a bug to not allow BaseR fec in 100G speed.
+- Fixed linkup issues on BT adapter in 1G and 100M speed.
+- Fixed an issue to allow driver to send VI_ENABLE multiple times (once
+  with rx disable and then later rx enable).
+- Fixed rate limiting not working on class number 16 to 30.
+
+ETH:
+- Fixed a case when firmware failed to deliver NIC WR completion to host.
+- No rate limit support for WR ETH_TX_PKTS2 due to performance reasons.
+
+OFLD
+- Fixed a connection hang in SO adapters when tp_plen_max (set by driver)
+  is more than the window size.
+- Added fw_filter_vnic_mode to firmware API file (t4fw_interface.h)
+- Use correct rx channel in coprocessor crypto completion (CPL_FW6_PLD). This
+  was causing out of order completion to host.
+
+FOiSCSI
+- Fixed a crash due to unaligned access of ipv6 address.
+- Fixed a crash during lun reset.
+
+
+Enhancements
+------------
+
+OFLD:
+- Disabled bottleneck bandwidth logic due to perf reason.
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ERRATA (Open Issues)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Network (NIC/TOE)
+-----------------
+
+- 40948: SEND-Q values under "ss -tin" show negative values for TOE connections.
+
+- 40425: Kernel panic with continuous flood of syn packets to offloaded server.
+
+- 40393: Link bounce observed when we change speed with autoneg off.
+
+- 40000: [TOE]: Need support for asynchronous socket mechanism.
+
+- 38844/36020: 100G link fails to come up with few switches with FEC OFF and 
+               AN ON.
+
+Workaround: Disable AN for the link to come up. 
+
+- 37930: Need support for ethtool -l.
+
+- 36151: [T6-Spider] 25G Link takes time to come up on port 1. 
+
+- 35372: ethtool does not report correct values on swapping the fibre with 
+         twinax cables.
+
+- 35353: Rx packets are getting dropped when double VLAN is configured.
+
+- 35243: TCP Fin and Ack packets are seen in tcpdump while running large number 
+         of TOE connections.
+
+- 34592: Link goes down on plug/unplug with AN off QSFP28/SFP28 Fibre/Copper.
+
+- 34179: Setting 1G speed for 25G optics is not supported.
+
+- 34142: Trace observed while unloading t4_tom on RHEL6.X platforms.
+
+NOTE: This is a kernel issue and will be seen only with multiple adapters.
+
+- 34068: RS FEC is not supported on 50G link.
+
+- 33643: [VXLAN]: No support for computing outer UDP checksum.
+
+- 33531: LED blinks rapidly on 100G adapters when we run ethtool -p ethX and 
+         connect the Twinax cable.
+
+- 32844: devlog is flooded with link related messages when 1G link is not UP. 
+
+- 32825: T5 40G twinax link fails to come up when connected to few switches. 
+
+- 32515: [PTP] Unable to start 'HW time stamping' master clock with Network 
+         transport option. 
+
+- 31775: deadman_watchdog timer is not accurate for mode=pauseoff. 
+
+- 31398: [T6]: Link takes a while to come up with few 100G switches.
+
+Workaround: Add an_aec_time = 9000 in the port section of /lib/firmware/cxgb4/t6-config.txt 
+            and reload cxgb4 driver.
+  
+- 27853: DUT (in TOE mode) sends out MSS value of 536 when Peer sends a SYN 
+         packet without MSS specified.
+    
+- 24481: Link bounce observed when T580 adapters are connected to Quanta Switch.
+
+This is a Quanta Switch issue. Only one link bounce is seen initially, and 
+thereafter the link remains good with no bounces or errors.
+
+- 24197: T580-CR LEDs are OFF in Spider and QSA mode. 
+
+- 21788: Some incoming connections get tunnelled even when an offload server 
+         is set up.
+
+- 11454: Traffic keeps running even after bringing the VLAN interface down.
+
+- 10420: NFS connectivity toggles, while running "iozone -a" on the mounted share
+
+This is bug in NFS stack of Linux Kernel, fixed by kernel.org commit
+24ca9a8 (SUNRPC: Ensure we return EAGAIN in xs_nospace if congestion is cleared).
+
+Workaround: Set toe.toe0_tom.max_host_sndbuf to 2097152 using sysctl to fix the 
+            issue.
+
+
+Virtual Function Network (vNIC) 
+-------------------------------
+
+- 36902: [DCBX]: ETS is not supported on vNIC interface. 
+
+- 36062: Need transparent VLAN encapsulation/de-encapsulation in Hypervisor 
+         for SR-IOV Virtual Functions.
+
+- 31759: soft lockup observed in dmesg while running heavy UDP traffic.
+
+- 29916: "tp_tnl_cong_drops" are incrementing while VM receives traffic.
+
+- 28561: mps_tcam entry is not getting created intermittently whenever 
+         subscribing VF to the multicast group.
+
+- 28471: write_coal_fail counters increments after loading vf driver.
+
+
+iWARP RDMA Offload 
+------------------
+
+- 40664: "Failed to disconnect RDMA CM connection" seen on client while running
+         perftest tools on RHEL8.2 and Ubuntu 20.04.2
+
+- 40649: [RHEL7.9]: "iwpm_mapping_error_cb" seen while running iwarp traffic
+         with iwpmd enabled.
+
+NOTE: This issue is seen only with the inbox rdma-core (rdma-core-22.4-5) of 
+      RHEL7.9. The issue can be fixed by re-installing the same or higher version
+      of rdma-core from github.
+
+- 40471: LE Hash error observed while running iwarp traffic.
+
+- 40469: [Ubuntu-18.04.5]: Cannot run iwarp tools with iwpmd enabled.
+
+Workaround: Install rdma-core v28.0 or higher and the issue will not be seen.
+
+- 38382: [RHEL7.7/8.1]: "iwpm_mapping_error_cb" seen while running iwarp traffic.
+
+NOTE: This is an issue with RHEL 7.7/8.1 distributions and is not seen from 
+      RHEL 7.8/8.2. As a workaround, disable iwpmd while running traffic.
+
+- 37363: RDMA user-mode fails on RHEL7.6-ALT
+
+- 36454: Need DCB (ETS) support for iWARP traffic.
+
+- 35622: iozone stalls, while mounting with vers=4 on restarting the NFS server.
+
+Workaround: Reduce the grace time and lease time and restart the NFS server.
+
+# service nfs stop
+# echo 10 > /proc/sys/fs/nfs/nlm_grace_period
+# echo 10 > /proc/fs/nfsd/nfsv4gracetime
+# echo 10 > /proc/fs/nfsd/nfsv4leasetime
+# service nfs start
+
+- 35540: [RHEL7.6 ARM]: NFS server panics while opening a file in mounted folder
+         from the client.
+
+NOTE: This is a kernel issue. Issue not seen with RHEL7.9 kernel installed on the 
+      server. 
+
+- 35105: Need iWARP support for SR-IOV VF.
+
+- 19043: [T5]"osu_latency_mt" test failed.
+
+Fix: To fix this issue, build MPI with multi-threading support
+     (--enable-threads=multiple)
+
+- 5173: Intermittent connection setup failure with NP192 IMB jobs 
+
+For OpenMPI/RDMA clusters with node counts greater than or equal to 8 nodes,
+and process counts greater than or equal to 64, you may experience the
+following RDMA address resolution error when running MPI jobs with the default
+OpenMPI settings:
+
+The RDMA CM returned an event error while attempting to make a
+connection.  This type of error usually indicates a network
+configuration error.
+
+  Local host:   core96n3.asicdesigners.com
+  Local device: Unknown
+  Error name:   RDMA_CM_EVENT_ADDR_ERROR
+  Peer:         core96n8
+
+Workaround: Increase the OpenMPI rdma route resolution timeout. The default is 
+            1000, or 1000ms. Increase it to 30000 with this parameter:
+
+            --mca btl_openib_connect_rdmacm_resolve_timeout 30000
+  
+- 4659: OSU benchmark test osu_bibw fails to complete in Platform MPI
+
+NOTE: Running osu_bibw benchmark using Platform MPI is known to report issues 
+      and is not an iWARP driver bug.
+
+
+iSER
+----
+
+- 40690: I/O errors seen while running iser traffic.
+
+- 40616: [5.10]: Login fails for more than 9 connections.
+
+NOTE: This is a kernel issue and fixed in kernels > 5.10.17.
+
+- 38405: "Unknown VPD Code: 0xc9" seen on target during iser login.
+
+Workaround: Disable multipathd service on initiator. 
+
+- 37110: call trace seen within 30 min on iser target machine while running 
+         iozone traffic.
+
+NOTE: This is an issue with kernel iSER Target module. It is fixed in kernel 
+      5.4 and above. 
+
+- 34813: Session terminates when running traffic with block size >= 1M.
+
+- 32280: Login timeout and IO errors seen, when sg_reset is issued on the LUN 
+         from Initiator.
+
+- 30607: Trace is seen while clearing target configuration during I/O.
+
+
+WD-UDP
+------
+
+- 40727: Unable to create 63 connections with iperf3. 
+
+- 39142: wdload needs to handle two cards correctly.
+
+- 35482: Applications doing fork are not supported with WD-UDP.
+
+- 34201: [T6]: Unable to run more than 512 connections with WD high capacity 
+         config file.
+
+- 32790: UDP offload fails on receiving end with netserver.
+
+Workaround: Start netserver with -f option. 
+
+- 29916: "tp_tnl_cong_drops" observed in ethtool while running WD-UDP traffic.
+
+
+NVMe-oF iWARP
+-------------
+
+- 39048: [5.4]: I/O error seen when we format the LUN's.
+
+NOTE: This is a kernel issue and is fixed in later Kernel.org kernels.
+
+
+SPDK NVMe-oF iWARP  
+------------------
+
+- 40505: [RHEL8.2]: initiator hits call trace while formatting spdk luns.
+
+NOTE: This issue is seen only with ext3.
+
+
+NVMe-oF TOE
+-----------
+
+- 40852: NVMe/TCP and NVMe/TOE are not supported in RHEL8.2 
+
+- 39048: I/O error seen when we format the LUN's.
+
+NOTE: This is a kernel issue and is fixed in later Kernel.org kernels.
+
+
+SPDK NVMe-oF TOE
+----------------
+
+- 40979: Unable to create targets when "vfio-pci" is used. 
+
+- 40715: Need support for SPDK v21.01 LTS.
+
+- 39606: nvmf_tgt reports errors with lvm on nvme disks.
+
+NOTE: This is not a Chelsio driver issue. It is a genric issue with SPDK.
+
+- 39550: Compilation fails on Virtual Machines.
+
+NOTE: This is not a Chelsio driver issue. It is a genric issue with SPDK. To 
+      avoid this, enusre that virtual cpu has sse4_1,sse4_2 attributes. Please 
+      refer https://mails.dpdk.org/archives/users/2016-February/000283.html
+
+ 
+SoftiWARP
+--------
+
+- 40653: Initiator hits panic during nvme discovery.
+
+NOTE: This is a kernel issue and fixed in > 5.10.18.
+
+- 39340: Trace seen on initiator while running nvme traffic with link toggle.
+
+- 39156: Connection errors seen intermittently while running iser traffic.
+
+- 39037: I/O errors (WRITE) seen on while running NVMe-oF iozone traffic.
+
+Workaround: This is fixed in the latest kernel.org kernels. As a workaround, 
+            increase the number of retries for nvme host driver. 
+
+            # modprobe nvme-core max_retries=15
+
+
+LIO iSCSI Target Offload
+------------------------
+
+- 33602: Connection errors due to dataout_timeout seen while running traffic. 
+
+
+iSCSI PDU Offload Target
+------------------------
+
+- 36709: Kernel panic seen during stop/start, while running 2 port traffic. 
+
+- 31814: Connection reset observed while running I/O when iommu is enabled.
+
+
+iSCSI PDU Offload Initiator
+---------------------------
+
+- 38376: connection errors are seen during logout of the LUN.
+
+- 32813: Observing few connection errors while running traffic.
+
+- 27066: Soft lock-up trace may appear while running heavy traffic.  
+     
+Workaround: Increase the value of 'node.session.xmit_thread_priority' parameter
+in the Open-iSCSI configuration file (/etc/iscsi/iscsid.conf).
+
+
+Crypto Offload 
+--------------
+
+- 40947: [5.10]: Failures seen during ab test with concurrent connections (-c). 
+
+- 39666: [Co-processor]: Connections in IPSec tunnel fail to establish if t4_tom 
+         is loaded.
+
+- 38690: [Co-processor]: Need openssh support.
+
+- 38677: [Co-processor]: VSFTP is not supported.
+
+- 37442: [Co-processor]: Issues with IPsec tunnelling.
+
+Workaround: This is a kernel issue and not seen in 5.3 and above kernels. Disable 
+            IOMMU and the issue will not be seen.
+
+- 35686: Inline TLS is not supported on memory free adapters. 
+
+- 34697: [RHEL7.4]: Running IPsec and OpenSSL encryption/decryption 
+         simultaneously is not supported.
+
+NOTE: This is a RHEL7.4 kernel issue. Issue is not seen in RHEL7.5
+
+- 34623: OpenSSL digest with af_alg engine fails if chcr is not loaded. 
+
+NOTE: This is a RHEL7.4 kernel issue. Issue is not seen in RHEL7.5
+
+- 32884: Machine hits kernel panic when running IPSEC with AES-CTR with larger 
+         payload sizes.
+
+Note: This is a kernel issue, and it is fixed with 
+      http://www.mail-archive.com/linux-crypto@vger.kernel.org/msg25422.html 
+      patch. Fix is available in kernels >=4.9.37
+
+- 32889: Running HMAC tests by specifying "-engine af_alg" fails.
+
+Workaround: Don't specify "-engine af_alg" since it gets offloaded on to the 
+adapter even without this parameter.
+
+
+Data Center Bridging (DCB)
+--------------------------
+
+- 39742: dcb_info does not show local App TLVs, when DCBX is disabled on PEER.
+
+- 38705: Only few connections are reset, when iSCSI DCB priority is updated 
+         in switch.
+
+- 37609: Intermittent PFC failures seen. 
+
+- 37518: Need to show local, remote and operational DCBX parameters in 
+         devlog/dcb_info.
+
+- 34552: PFC pause frames with priority > 3 are not honoured by T6 adapter.
+
+Workaround: Configure priority 0-3 for PFC.
+
+- 30002: "Failed DCB Set Application Priority" seen in dmesg if DCBX 
+         configuration is updated on Switch.
+
+
+FCoE full offload Initiator
+---------------------------
+
+- 40700: [Ubuntu-20.04.2]: Trace seen on loading csiostor on NUMA machines.
+
+- 40189: [RHEL8.X]: Modifying IRQ affinity does not work. 
+
+- 35737: Repeated shut and no-shut of target port with less delay is not 
+         supported.
+
+- 33967: Running FCoE full offload and openfcoe (NIC) initiator traffic 
+         simultaneously is not supported.
+
+- 34116: Panic observed while loading csiostor after cxgb4 when multiple adapter
+         are present in RHEL7.X platforms. 
+
+NOTE: This is a kernel issue.
+
+- 33948: Need scsi-stats under sysfs.
+
+
+Offload Bonding Driver 
+----------------------
+
+- 40860: TIDs stuck with bidirectional traffic and repeated interface toggle 
+         with mode=0 bond.
+
+- 36972: No Load balancing in RHEL7.X platforms with mode=2
+
+NOTE: This issue is seen only with iperf and not with other applications like 
+      netperf.
+
+- 29564: All Rx connections are not resuming immediately on failover.
+
+Workaround: disable frto on peer using sysctl
+
+- 21419: Offload connections need to be migrated to host stack when last slave 
+         is removed from the bond.
+
+
+Offload Multi-Adapter Failover (MAFO)
+-------------------------------------
+
+- 32092: Traffic fails to run on backup interface if two non-identical cards 
+         are used.
+
+Workaround: Disable tcp_timestamps using 
+[root@host ~]# sysctl -w net.ipv4.tcp_timestamps=0
+
+
+UDP Segmentation Offload and Pacing
+-----------------------------------
+
+- 13872: Application exits immediately when interface goes down.
+
+- 13484: Need a way to reset the pacing values to default value.
+
+
+Offload IPv6
+------------
+
+- 7263: IPv6 offload does not support "IPv4-mapped IPv6 addresses". 
+
+
+WD Sniffing And Tracing Utility
+-------------------------------
+
+- 40885: Start/stop of tracer continuously with traffic is not supported.
+
+- 40833: tp_tnl_cong_drops seen on tracer while running wd_tcpdump_trace. 
+
+Workaround: Disable PAUSE on the Chelsio ports of the tracer machine.
+
+
+Classification and Filtering
+----------------------------
+
+- 40218: Needs to add mirror traffic stats in debugfs qstats file.
+
+- 40102: Unable to create hash filters on SO adapter. 
+
+- 37865: Should report error when creating Hash filter rule with not all tuples 
+         provided in filterMask.
+
+- 37333: Filter rule does not get honoured when "frag" is set to "1" along with 
+         fport or lport tuples.
+
+- 35952: filter do not honor when Don't Fragment(DF) and More Fragments(MF) 
+         flags are set in a packet. 
+
+- 35653: Kernel invokes panic when sending traffic to any RspQ ID other than 
+         ethernet queue using TCAM filter rule. 
+
+- 34757: Need support for stateful NAT.
+
+- 34040: [VxLAN encap] can not classify packets based on outer header in VxLAN 
+         traffic (encap_lookup=0).
+
+- 33896: Filter does not honour when VNI, lport, etc is preceded by 0 when 
+         creating a filter.
+
+- 33640: Need support for src-mac match for Filtering.
+
+- 33535: Kernel panic seen when enabling tracing to port-1 with 
+         hashfilter-config file.
+
+- 32677: Need proper error message when hash filter entries get exhausted.
+
+- 30260: Filter rule is not honoured for packet with both outer and inner vlan.
+
+- 21118: VLAN insertion/extraction/rewrite is not supported with DDR filters.
+
+- 10219: Rule based on ethertype 0x8906(FCoE) isn't getting honoured.
+
+
+OVS Offload Driver
+------------------
+
+- 37130: LIP should be provided for IPv6 filter to be hit.
+
+- 33706: Exact match filters (specifying 4 tuples) with VxLAN currently not 
+         supported.
+
+- 33662: 2nd VxLAN tunnel with different UDP port won't get offloaded.
+
+- 33280: VxLAN VNI rewrite is not supported.
+
+- 33271: Hitcounts are not incrementing seamlessly when less than 16 flows 
+         are configured. 
+
+
+Mesh Topology
+-------------
+
+- 38780: rping fails to run when iwpmd is enabled.
+
+- 38744: Need a method to configure two network interfaces with IPv6 address on 
+         same subnet. 
+
+- 37267: Need a utility to configure network interfaces in mesh topology.  
+
+
+Traffic Management
+------------------
+
+- 39706: [Class Rate Limiting][25G]: Throughput drop observed while running multiple 
+         connections on multiple classes.
+
+- 39533: Throughput exceeds the set rate if burst size > 13043.
+
+- 35985: No error observed on configuring rate limit more than link speed.
+
+- 34124: [TM+TLS]: Higher bandwidth observed for TLS+TOE connections. 
+
+NOTE: Configure burst-size 16384 to rate limit TLS+TOE connections. 
+
+- 17207: Class rate limiting with mode flow is not supported for NIC traffic.
+
+
+Unified Boot Software
+---------------------
+
+- 39895: iSCSI boot should allow multiple target and luns to save as boot device.
+
+- 36680: Need support for AARCH64 in uEFI driver.
+
+- 36033: [uEFI]: PXE fails when iSCSI is enabled on uEFI 2.3 machines.
+
+- 35708: [Lenovo]: HII is currently not supported on latest uEFI v2.6 machines.
+
+Workaround: Use "drvcfg -s" from uEFI shell to configure the adapter.    
+
+- 23143: [HII] Behaviour on IBM x3850 Gen 6 needs few modifications.
+
+
+
+
+
+********************************************************************************
+Copyright (C) 2021 Chelsio Communications. All Rights Reserved.
+
+The information in this document is furnished for informational use only, is
+subject to change without notice, and should not be construed as a commitment by
+Chelsio Communications. Chelsio Communications assumes no responsibility or
+liability for any errors or inaccuracies that may appear in this document or any
+software that may be provided in association with this document. Except as
+permitted by such license, no part of this document may be reproduced, stored in
+a retrieval system, or transmitted in any form or by any means without the
+express written consent of Chelsio Communications.

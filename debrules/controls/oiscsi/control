@@ -1,0 +1,7 @@
+package: oiscsi-utils
+Section: Kernels
+Version: 3.14.0.3
+Priority: optional
+Architecture: any
+Maintainer: Chelsio Communications <support@chelsio.com>
+Description: OpeniSCSI utils for Linux

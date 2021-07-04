@@ -1,0 +1,162 @@
+# HG changeset patch
+# User Potnuri Bharat Teja <bharat@chelsio.com>
+# Date 1545219047 -19800
+#      Wed Dec 19 17:00:47 2018 +0530
+# Node ID c3031c43f0045ec5a4faf085ad552f5a76a970e9
+# Parent  e93e0a9acdfd796ee91a2b490a01d25738d3a92f
+libcxgb4: revert send with invalidate support
+
+Older rdma-core do not support send with invalidate, so reverting this change
+ for older rdma-core (version < 15)
+
+diff -r e93e0a9acdfd -r c3031c43f004 rdma-core/providers/cxgb4/cq.c
+--- a/rdma-core/providers/cxgb4/cq.c	Wed Dec 19 16:48:37 2018 +0530
++++ b/rdma-core/providers/cxgb4/cq.c	Wed Dec 19 17:00:47 2018 +0530
+@@ -958,28 +958,12 @@ static int c4iw_poll_cq_one(struct c4iw_
+ 			wc->byte_len = CQE_LEN(&cqe);
+ 		else
+ 			wc->byte_len = 0;
+-
+-		switch (CQE_OPCODE(&cqe)) {
+-		case FW_RI_SEND:
+-			wc->opcode = IBV_WC_RECV;
+-			break;
+-		case FW_RI_SEND_WITH_INV:
+-		case FW_RI_SEND_WITH_SE_INV:
+-			wc->opcode = IBV_WC_RECV;
+-			wc->wc_flags |= IBV_WC_WITH_INV;
+-			wc->invalidated_rkey = CQE_WRID_STAG(&cqe);
+-			break;
+-		case FW_RI_WRITE_IMMEDIATE:
++		if (CQE_OPCODE(&cqe) == FW_RI_WRITE_IMMEDIATE) {
+ 			wc->opcode = IBV_WC_RECV_RDMA_WITH_IMM;
+ 			wc->imm_data = CQE_IMM_DATA(&cqe);
+ 			wc->wc_flags |= IBV_WC_WITH_IMM;
+-			break;
+-		default:
+-			PDBG("Unexpected opcode %d "
+-			     "in the CQE received for QPID=0x%0x\n",
+-			     CQE_OPCODE(&cqe), CQE_QPID(&cqe));
+-			ret = -EINVAL;
+-			goto out;
++		} else {
++			wc->opcode = IBV_WC_RECV;
+ 		}
+ 	} else {
+ 		switch (CQE_OPCODE(&cqe)) {
+@@ -993,11 +977,8 @@ static int c4iw_poll_cq_one(struct c4iw_
+ 			break;
+ 		case FW_RI_SEND:
+ 		case FW_RI_SEND_WITH_SE:
+-			wc->opcode = IBV_WC_SEND;
+-			break;
+ 		case FW_RI_SEND_WITH_INV:
+ 		case FW_RI_SEND_WITH_SE_INV:
+-			wc->wc_flags |= IBV_WC_WITH_INV;
+ 			wc->opcode = IBV_WC_SEND;
+ 			break;
+ 		case FW_RI_BIND_MW:
+diff -r e93e0a9acdfd -r c3031c43f004 rdma-core/providers/cxgb4/qp.c
+--- a/rdma-core/providers/cxgb4/qp.c	Wed Dec 19 16:48:37 2018 +0530
++++ b/rdma-core/providers/cxgb4/qp.c	Wed Dec 19 17:00:47 2018 +0530
+@@ -210,28 +210,13 @@ static int build_rdma_send(struct t4_sq 
+ 
+ 	if (wr->num_sge > T4_MAX_SEND_SGE)
+ 		return -EINVAL;
+-	switch (wr->opcode) {
+-	case IBV_WR_SEND:
+-		if (wr->send_flags & IBV_SEND_SOLICITED)
+-			wqe->send.sendop_pkd = htobe32(
+-				V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND_WITH_SE));
+-		else
+-			wqe->send.sendop_pkd = htobe32(
+-				V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND));
+-		wqe->send.stag_inv = 0;
+-		break;
+-	case IBV_WR_SEND_WITH_INV:
+-		if (wr->send_flags & IBV_SEND_SOLICITED)
+-			wqe->send.sendop_pkd = htobe32(
+-				V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND_WITH_SE_INV));
+-		else
+-			wqe->send.sendop_pkd = htobe32(
+-				V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND_WITH_INV));
+-		wqe->send.stag_inv = htobe32(wr->invalidate_rkey);
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
++	if (wr->send_flags & IBV_SEND_SOLICITED)
++		wqe->send.sendop_pkd = htobe32(
++			V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND_WITH_SE));
++	else
++		wqe->send.sendop_pkd = htobe32(
++			V_FW_RI_SEND_WR_SENDOP(FW_RI_SEND));
++	wqe->send.stag_inv = 0;
+ 	wqe->send.r3 = 0;
+ 	wqe->send.r4 = 0;
+ 
+@@ -345,10 +330,7 @@ static void build_rdma_write_cmpl(struct
+ 
+ 	wcwr->stag_sink = htobe32(wr->wr.rdma.rkey);
+ 	wcwr->to_sink = htobe64(wr->wr.rdma.remote_addr);
+-	if (wr->next->opcode == IBV_WR_SEND)
+-		wcwr->stag_inv = 0;
+-	else
+-		wcwr->stag_inv = htobe32(wr->next->invalidate_rkey);
++	wcwr->stag_inv = 0;
+ 	wcwr->r2 = 0;
+ 	wcwr->r3 = 0;
+ 
+@@ -654,10 +636,7 @@ static void post_write_cmpl(struct c4iw_
+ 
+ 	/* SEND swsqe */
+ 	swsqe = &qhp->wq.sq.sw_sq[qhp->wq.sq.pidx];
+-	if (wr->next->opcode == IBV_WR_SEND)
+-		swsqe->opcode = FW_RI_SEND;
+-	else
+-		swsqe->opcode = FW_RI_SEND_WITH_INV;
++	swsqe->opcode = FW_RI_SEND;
+ 	swsqe->idx = qhp->wq.sq.pidx;
+ 	swsqe->complete = 0;
+ 	swsqe->signaled = send_signaled;
+@@ -712,9 +691,9 @@ static int post_rc_send(struct ibv_qp *i
+ 	/*
+ 	 * Fastpath for NVMe-oF target WRITE + SEND_WITH_INV wr chain which is
+ 	 * the response for small NVMEe-oF READ requests.  If the chain is
+-	 * exactly a WRITE->SEND_WITH_INV or a WRITE->SEND and the sgl depths 
+-	 * and lengths meet the requirements of the fw_ri_write_cmpl_wr work 
+-	 * request, then build and post the write_cmpl WR.  If any of the tests
++	 * exactly a WRITE->SEND_WITH_INV and the sgl depths and lengths
++	 * meet the requirements of the fw_ri_write_cmpl_wr work request,
++	 * then build and post the write_cmpl WR.  If any of the tests
+ 	 * below are not true, then we continue on with the tradtional WRITE
+ 	 * and SEND WRs.
+ 	 */
+@@ -723,8 +702,7 @@ static int post_rc_send(struct ibv_qp *i
+ 	    wr && wr->next && !wr->next->next &&
+ 	    wr->opcode == IBV_WR_RDMA_WRITE && wr->sg_list[0].length &&
+ 	    wr->num_sge <= T4_WRITE_CMPL_MAX_SGL &&
+-	    (wr->next->opcode == IBV_WR_SEND_WITH_INV ||
+-	    wr->next->opcode == IBV_WR_SEND) &&
++	    wr->next->opcode == IBV_WR_SEND &&
+ 	    wr->next->sg_list[0].length == T4_WRITE_CMPL_MAX_CQE &&
+ 	    wr->next->num_sge == 1 && num_wrs >= 2) {
+ 		post_write_cmpl(qhp, wr);
+@@ -747,16 +725,12 @@ static int post_rc_send(struct ibv_qp *i
+ 			fw_flags |= FW_RI_COMPLETION_FLAG;
+ 		swsqe = &qhp->wq.sq.sw_sq[qhp->wq.sq.pidx];
+ 		switch (wr->opcode) {
+-		case IBV_WR_SEND_WITH_INV:
+ 		case IBV_WR_SEND:
+ 			INC_STAT(send);
+ 			if (wr->send_flags & IBV_SEND_FENCE)
+ 				fw_flags |= FW_RI_READ_FENCE_FLAG;
+ 			fw_opcode = FW_RI_SEND_WR;
+-			if (wr->opcode == IBV_WR_SEND)
+-				swsqe->opcode = FW_RI_SEND;
+-			else
+-				swsqe->opcode = FW_RI_SEND_WITH_INV;
++			swsqe->opcode = FW_RI_SEND;
+ 			err = build_rdma_send(&qhp->wq.sq, wqe, wr, &len16);
+ 			break;
+ 		case IBV_WR_RDMA_WRITE_WITH_IMM:
