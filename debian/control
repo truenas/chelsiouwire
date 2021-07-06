@@ -1,0 +1,17 @@
+Source: cxgbtool
+Section: admin
+Priority: optional
+Maintainer: Waqar Ahmed <waqar@ixsystems.com>
+Build-Depends:	flex,
+		gcc,
+		make,
+		debhelper-compat (= 12)
+Standards-Version: 4.4.0
+Homepage: http://www.truenas.com
+
+Package: cxgbtool
+Architecture: any
+Depends:	${misc:Depends},
+		${shlibs:Depends}
+Description: Cxgbtool package
+ This package provides poll mode driver support for Chelsio T5 10/40 Gbps family of adapters.
