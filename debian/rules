@@ -13,6 +13,8 @@ override_dh_auto_install:
 	sh -c "\
 		mkdir -p debian/cxgbtool/sbin; \
 		cp -a /sbin/cxgbtool debian/cxgbtool/sbin/; \
+		mkdir -p debian/cxgbtool/lib/firmware/cxgb4/config; \
+		cd tools/chelsio_adapter_config_v4 && ./install.sh "debian/cxgbtool/lib/firmware/cxgb4/config" "debian/cxgbtool/sbin"; \
 	"
 
 override_dh_shlibdeps:
