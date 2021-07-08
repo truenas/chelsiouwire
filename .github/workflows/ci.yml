@@ -1,0 +1,36 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Dependencies
+        run: |
+          apt update
+          apt install -y flex gcc make devscripts
+      - name: Build deb package
+        run: >
+          dpkg-buildpackage
+          -B
+          --no-sign
+          -jauto
+
+      - name: Create artifacts dir
+        run: mkdir artifacts
+        if: success()
+
+      - name: Move artifacts
+        run: mv ../*.deb artifacts
+        if: success()
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: cxgbtool
+          path: artifacts
+        if: success()
